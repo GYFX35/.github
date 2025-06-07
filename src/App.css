@@ -29,3 +29,41 @@
 .small {
   font-size: 0.75rem;
 }
+
+/* Navigation Styles */
+nav ul {
+  list-style-type: none;
+  padding: 0;
+  display: flex; /* Arrange links in a row */
+  justify-content: center; /* Center links */
+  margin-bottom: 20px;
+}
+
+nav ul li {
+  margin: 0 15px; /* Spacing between links */
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: #61dafb; /* React blue, or choose another color */
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+nav ul li a:hover {
+  background-color: #f0f0f0; /* Light background on hover */
+  color: #282c34; /* Darker text on hover */
+}
+
+/* Page Content basic styling */
+.App > div > div { /* Target the page component containers */
+  padding: 20px;
+  border: 1px solid #eee;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+
+h1 {
+  color: #333;
+}
