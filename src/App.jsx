@@ -4,6 +4,7 @@ import NavigationBar from './components/NavigationBar';
 import Feed from './components/Feed';
 import UserProfile from './components/UserProfile';
 import Forums from './components/Forums';
+import ShopPage from './components/ShopPage'; // Import ShopPage
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Route path="/" element={<Feed />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/forums" element={<Forums />} />
+              <Route path="/shop" element={<ShopPage />} /> {/* Add ShopPage route */}
         </Routes>
       </div>
     </Router>
