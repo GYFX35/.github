@@ -1,13 +1,230 @@
+/* src/index.css */
+:root {
+  /* Color Palette */
+  --primary-color: #357ABD; /* Blue */
+  --secondary-color: #17a2b8; /* Teal/Cyan */
+  --accent-color: #f5a623; /* Orange */
+  --success-color: #28a745; /* Green */
+  --danger-color: #dc3545; /* Red */
+  --warning-color: #ffc107; /* Yellow */
+  --info-color: #17a2b8; /* Teal/Cyan - same as secondary */
+
+  --text-color: #212529; /* Dark Gray for text */
+  --secondary-text-color: #6c757d; /* Medium Gray for secondary text */
+  --link-color: var(--primary-color);
+  --link-hover-color: #2a5a8a; /* Darker blue for link hover */
+
+  --background-color: #ffffff; /* White */
+  --light-background-color: #f8f9fa; /* Very Light Gray */
+  --border-color: #dee2e6; /* Light Gray Border */
+
+  /* Fonts */
+  --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                            "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+                            "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+                            "Noto Color Emoji";
+  --font-size-base: 1rem; /* Typically 16px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-lg: 1.25rem; /* 20px */
+
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-bold: 700;
+
+  --line-height-base: 1.5;
+  --line-height-sm: 1.2;
+  --line-height-lg: 1.7;
+
+  /* Spacing (examples, can be expanded) */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem;  /* 8px */
+  --spacing-md: 1rem;    /* 16px */
+  --spacing-lg: 1.5rem;  /* 24px */
+  --spacing-xl: 2rem;    /* 32px */
+
+  /* Borders */
+  --border-width: 1px;
+  --border-radius: 0.25rem; /* 4px */
+  --border-radius-sm: 0.2rem; /* ~3px */
+  --border-radius-lg: 0.3rem; /* ~5px */
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-family-sans-serif);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-base);
+  color: var(--text-color);
+  background-color: var(--background-color);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-sm);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-sm);
+  color: var(--text-color); /* Or a slightly darker shade if preferred */
 }
+
+h1 { font-size: 2.25rem; } /* ~36px */
+h2 { font-size: 1.875rem; } /* ~30px */
+h3 { font-size: 1.5rem; }  /* ~24px */
+h4 { font-size: 1.25rem; } /* ~20px */
+
+p {
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: none; /* Personal preference, can be 'underline' */
+}
+
+a:hover {
+  color: var(--link-hover-color);
+  text-decoration: underline;
+}
+
+img {
+  vertical-align: middle;
+  border-style: none; /* Remove border from images within links in some browsers */
+}
+
+/* Basic Button Styling (can be overridden by component styles or more specific classes) */
+.btn {
+  display: inline-block;
+  font-weight: var(--font-weight-normal);
+  color: var(--text-color);
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  background-color: transparent;
+  border: var(--border-width) solid transparent;
+  padding: var(--spacing-sm) var(--spacing-md); /* 0.5rem 1rem */
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  border-radius: var(--border-radius);
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+              border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.btn:hover {
+  text-decoration: none;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+.btn-primary:hover {
+  background-color: #2a65a0; /* Darker primary */
+  border-color: #285e95;
+}
+
+.btn-secondary {
+  color: #fff;
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+.btn-secondary:hover {
+  background-color: #117a8b; /* Darker secondary */
+  border-color: #10707f;
+}
+
+.btn-success {
+  color: #fff;
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+.btn-success:hover {
+  background-color: #1e7e34;
+  border-color: #1c7430;
+}
+
+.btn-danger {
+  color: #fff;
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+.btn-danger:hover {
+  background-color: #bd2130;
+  border-color: #b21f2d;
+}
+
+.btn-warning {
+  color: var(--text-color);
+  background-color: var(--warning-color);
+  border-color: var(--warning-color);
+}
+.btn-warning:hover {
+  background-color: #e0a800;
+  border-color: #d39e00;
+}
+
+.btn-info {
+  color: #fff;
+  background-color: var(--info-color);
+  border-color: var(--info-color);
+}
+.btn-info:hover {
+  background-color: #117a8b; /* Same as secondary hover */
+  border-color: #10707f;
+}
+
+.btn-light {
+  color: var(--text-color);
+  background-color: var(--light-background-color);
+  border-color: #ced4da; /* A bit darker than default border for definition */
+}
+.btn-light:hover {
+  background-color: #e2e6ea;
+  border-color: #dae0e5;
+}
+
+.btn-link {
+  font-weight: var(--font-weight-normal);
+  color: var(--link-color);
+  text-decoration: none;
+}
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* Basic Card Styling (Example) */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: var(--background-color);
+  background-clip: border-box;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-lg); /* Slightly larger radius for cards */
+  margin-bottom: var(--spacing-md);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-body {
+  flex: 1 1 auto;
+  padding: var(--spacing-md);
+}
+
+.card-title {
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.card-text:last-child {
+  margin-bottom: 0;
+}
+
+/* Ensure App.css is minimal or remove conflicting global styles from it */
+/* It's better to centralize global styles in index.css */

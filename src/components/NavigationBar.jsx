@@ -1,16 +1,16 @@
 // src/components/NavigationBar.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import ShareButton from './ShareButton'; // Import ShareButton
+import ShareButton from './ShareButton';
 
 function NavigationBar() {
   const navStyle = {
     display: 'flex',
-    justifyContent: 'space-between', // To space out nav links and share button
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '10px 20px',
-    backgroundColor: '#f8f9fa', // A light background for the nav
-    borderBottom: '1px solid #dee2e6'
+    padding: 'var(--spacing-sm) var(--spacing-md)', // Use theme spacing
+    backgroundColor: 'var(--light-background-color)',
+    borderBottom: 'var(--border-width) solid var(--border-color)'
   };
 
   const ulStyle = {
@@ -18,23 +18,39 @@ function NavigationBar() {
     padding: 0,
     margin: 0,
     display: 'flex',
-    gap: '15px' // Spacing between nav items
+    gap: 'var(--spacing-md)' // Use theme spacing
   };
+
+  const linkStyle = { // Defined for clarity, Link component might not take style directly
+    color: 'var(--text-color)', // Standard text color for nav links
+    textDecoration: 'none',
+    padding: 'var(--spacing-xs) var(--spacing-sm)',
+    borderRadius: 'var(--border-radius-sm)',
+  };
+
+  // For active link styling, you'd typically use NavLink from react-router-dom
+  // and pass an isActive prop to style. For Link, direct styling is less common.
+  // We'll rely on global 'a' styles and hover from index.css for now.
 
   return (
     <nav style={navStyle}>
       <ul style={ulStyle}>
-        <li><Link to="/">Feed</Link></li>
-        <li><Link to="/profile">Profile</Link></li>
-        <li><Link to="/forums">Forums</Link></li>
-        <li><Link to="/shop">Shop</Link></li>
+        <li><Link to="/" style={linkStyle}>Feed</Link></li>
+        <li><Link to="/profile" style={linkStyle}>Profile</Link></li>
+        <li><Link to="/forums" style={linkStyle}>Forums</Link></li>
+        <li><Link to="/shop" style={linkStyle}>Shop</Link></li>
       </ul>
       <ShareButton
         title="Check out this Health & Wellbeing Platform!"
         text="Join our community for global health and wellbeing promotion, forums, and more."
-        url={window.location.origin} // Shares the base URL of the app
+        url={window.location.origin}
         buttonText="Share App"
-        buttonStyle={{backgroundColor: '#28a745', fontSize: '13px', padding: '6px 10px'}}
+        // Use theme variables for button style, or a global .btn class if ShareButton is adapted
+        buttonStyle={{
+          backgroundColor: 'var(--success-color)', // Example: use success color
+          fontSize: 'var(--font-size-sm)',
+          padding: 'var(--spacing-xs) var(--spacing-sm)'
+        }}
       />
     </nav>
   );

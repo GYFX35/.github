@@ -1,16 +1,6 @@
+// src/components/ShareButton.jsx
 import React, { useState } from 'react';
 
-/**
- * A button component to share content using the Web Share API
- * with a fallback to copying the URL to the clipboard.
- *
- * Props:
- *  - title (string): The title of the content to be shared.
- *  - text (string): The descriptive text to be shared.
- *  - url (string): The URL to be shared. Defaults to current window URL if not provided.
- *  - buttonText (string, optional): Text for the button. Defaults to "Share".
- *  - buttonStyle (object, optional): Custom styles for the button.
- */
 function ShareButton({ title, text, url, buttonText = "Share", buttonStyle }) {
   const [feedbackMessage, setFeedbackMessage] = useState('');
 
@@ -21,16 +11,21 @@ function ShareButton({ title, text, url, buttonText = "Share", buttonStyle }) {
   };
 
   const defaultButtonStyle = {
-    backgroundColor: '#17a2b8', // Info color
+    backgroundColor: 'var(--info-color)', // Using info color from theme
     color: 'white',
-    border: 'none',
-    padding: '8px 12px',
-    borderRadius: '4px',
+    border: 'var(--border-width) solid transparent', // Consistent with .btn
+    padding: 'var(--spacing-xs) var(--spacing-sm)', // Adjusted padding
+    borderRadius: 'var(--border-radius)',
     cursor: 'pointer',
-    fontSize: '14px',
-    margin: '5px',
+    fontSize: 'var(--font-size-sm)', // Smaller font for share button
+    margin: 'var(--spacing-xs)',
+    fontWeight: 'var(--font-weight-normal)',
+    transition: 'background-color 0.15s ease-in-out, opacity 0.15s ease-in-out',
     ...buttonStyle,
   };
+
+  // Hover style for default button
+  const hoverStyle = { backgroundColor: '#117a8b' }; // Darker info
 
   const handleShare = async () => {
     setFeedbackMessage(''); // Clear previous message
@@ -64,10 +59,19 @@ function ShareButton({ title, text, url, buttonText = "Share", buttonStyle }) {
 
   return (
     <>
-      <button style={defaultButtonStyle} onClick={handleShare}>
+      <button
+        style={defaultButtonStyle}
+        onClick={handleShare}
+        onMouseEnter={e => e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor}
+        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--info-color)'}
+      >
         {buttonText}
       </button>
-      {feedbackMessage && <span style={{ marginLeft: '10px', fontSize: '0.9em', color: '#555' }}>{feedbackMessage}</span>}
+      {feedbackMessage &&
+        <span style={{ marginLeft: 'var(--spacing-sm)', fontSize: 'var(--font-size-sm)', color: 'var(--secondary-text-color)' }}>
+          {feedbackMessage}
+        </span>
+      }
     </>
   );
 }

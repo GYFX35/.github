@@ -1,7 +1,3 @@
-.App {
-  text-align: center;
-}
-
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -18,14 +14,6 @@
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
 .heart {
   color: #ff0000;
-}
-
-.small {
-  font-size: 0.75rem;
 }

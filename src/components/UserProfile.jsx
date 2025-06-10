@@ -7,58 +7,74 @@ function UserProfile() {
   const [showCameraCapture, setShowCameraCapture] = useState(false);
 
   const profileCardStyle = {
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    padding: '20px',
+    border: 'var(--border-width) solid var(--border-color)',
+    borderRadius: 'var(--border-radius-lg)',
+    padding: 'var(--spacing-lg)',
     maxWidth: '600px',
-    margin: '20px auto',
+    margin: 'var(--spacing-lg) auto',
     textAlign: 'center',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+    backgroundColor: 'var(--background-color)', // Ensure card bg
+    boxShadow: '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)' // Standard shadow
   };
 
   const profileImagePlaceholder = {
     width: '150px',
     height: '150px',
     borderRadius: '50%',
-    backgroundColor: '#e0e0e0',
-    margin: '0 auto 20px auto',
+    backgroundColor: 'var(--light-background-color)',
+    margin: '0 auto var(--spacing-lg) auto',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: '#777',
-    fontSize: '14px',
-    fontWeight: 'bold',
+    color: 'var(--secondary-text-color)',
+    fontSize: 'var(--font-size-sm)',
+    fontWeight: 'var(--font-weight-bold)',
+    border: 'var(--border-width) dashed var(--border-color)'
   };
 
-  const buttonStyle = {
-    backgroundColor: '#007bff',
-    color: 'white',
+  const baseButtonStyle = { // Base for buttons in this component
     border: 'none',
-    padding: '10px 15px',
-    borderRadius: '4px',
+    padding: 'var(--spacing-sm) var(--spacing-md)',
+    borderRadius: 'var(--border-radius)',
     cursor: 'pointer',
-    margin: '5px',
-    fontSize: '14px',
+    margin: 'var(--spacing-xs)',
+    fontSize: 'var(--font-size-base)',
+    fontWeight: 'var(--font-weight-normal)',
+    textAlign: 'center',
+    transition: 'background-color 0.15s ease-in-out, border-color 0.15s ease-in-out',
+  };
+
+  const primaryButtonStyle = {
+    ...baseButtonStyle,
+    backgroundColor: 'var(--primary-color)',
+    color: 'white',
+  };
+
+  const secondaryButtonStyle = {
+    ...baseButtonStyle,
+    backgroundColor: 'var(--secondary-color)',
+    color: 'white',
   };
 
   const settingsSectionStyle = {
-    marginTop: '30px',
-    paddingTop: '20px',
-    borderTop: '1px solid #eee',
-    textAlign: 'left', // Align text to the left for settings
+    marginTop: 'var(--spacing-lg)',
+    paddingTop: 'var(--spacing-lg)',
+    borderTop: 'var(--border-width) solid var(--border-color)',
+    textAlign: 'left',
   };
 
   const settingItemStyle = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '10px 0',
+    padding: 'var(--spacing-sm) 0',
   };
 
-  const mockToggleStyle = { // Simple checkbox as a mock toggle
+  const mockToggleStyle = {
     width: '20px',
     height: '20px',
     cursor: 'pointer',
+    accentColor: 'var(--primary-color)' // Theme the checkbox color
   };
 
   return (
@@ -71,28 +87,30 @@ function UserProfile() {
 
       {!showCameraCapture ? (
         <button
-          style={buttonStyle}
+          style={primaryButtonStyle}
           onClick={() => setShowCameraCapture(true)}
         >
-          Update Profile Picture with Camera
+          Update Profile Picture
         </button>
       ) : (
         <div>
-          <p><em>(Ideally, the camera capture UI below would appear in a modal)</em></p>
-          <CameraCapture />
+          <p style={{fontSize: 'var(--font-size-sm)', color: 'var(--secondary-text-color)'}}>
+            <em>(Ideally, the camera capture UI below would appear in a modal)</em>
+          </p>
+          <CameraCapture /> {/* CameraCapture will be themed in a later step */}
           <button
-            style={{...buttonStyle, backgroundColor: '#6c757d', marginTop: '10px'}}
+            style={{...secondaryButtonStyle, marginTop: 'var(--spacing-md)'}}
             onClick={() => setShowCameraCapture(false)}
           >
-            Cancel Update / Close Camera
+            Cancel / Close Camera
           </button>
         </div>
       )}
 
       <div style={settingsSectionStyle}>
         <h3>Notification Settings</h3>
-        <p style={{fontSize: '0.9em', color: '#666'}}>
-          (These are conceptual placeholders. Actual enabling/disabling requires native app integration and backend logic.)
+        <p style={{fontSize: 'var(--font-size-sm)', color: 'var(--secondary-text-color)'}}>
+          (These are conceptual placeholders.)
         </p>
         <div style={settingItemStyle}>
           <label htmlFor="postNotifications">Enable Notifications for New Posts</label>
@@ -104,10 +122,10 @@ function UserProfile() {
         </div>
       </div>
 
-      <hr style={{margin: '30px 0'}} />
-
       {!showCameraCapture && (
-         <AffiliateLinkSection title="User's Recommendations" />
+        <div style={{marginTop: 'var(--spacing-lg)', paddingTop: 'var(--spacing-lg)', borderTop: 'var(--border-width) solid var(--border-color)'}}>
+          <AffiliateLinkSection title="User's Recommendations" />
+        </div>
       )}
     </div>
   );

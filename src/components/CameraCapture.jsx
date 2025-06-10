@@ -1,3 +1,4 @@
+// src/components/CameraCapture.jsx
 import React, { useState, useRef, useCallback } from 'react';
 
 function CameraCapture() {
@@ -9,46 +10,52 @@ function CameraCapture() {
 
   const styles = {
     container: {
-      margin: '20px auto',
-      padding: '20px',
-      border: '1px solid #ccc',
-      borderRadius: '8px',
+      margin: 'var(--spacing-lg) auto',
+      padding: 'var(--spacing-lg)',
+      border: 'var(--border-width) solid var(--border-color)',
+      borderRadius: 'var(--border-radius-lg)',
       maxWidth: '500px',
       textAlign: 'center',
+      backgroundColor: 'var(--background-color)',
     },
     video: {
       width: '100%',
       maxHeight: '300px',
-      backgroundColor: '#000',
-      borderRadius: '4px',
-      marginBottom: '10px',
-      border: '1px solid #ddd',
+      backgroundColor: '#000', // Keep black bg for video contrast
+      borderRadius: 'var(--border-radius)',
+      marginBottom: 'var(--spacing-md)',
+      border: 'var(--border-width) solid var(--border-color)',
     },
     canvas: {
-      display: 'none', // Hidden canvas for processing
+      display: 'none',
     },
     img: {
       maxWidth: '100%',
       maxHeight: '300px',
-      borderRadius: '4px',
-      border: '1px solid #ddd',
-      marginTop: '10px',
+      borderRadius: 'var(--border-radius)',
+      border: 'var(--border-width) solid var(--border-color)',
+      marginTop: 'var(--spacing-md)',
     },
-    button: {
-      backgroundColor: '#007bff',
-      color: 'white',
+    button: { // Base button style, specific colors below
       border: 'none',
-      padding: '10px 15px',
-      borderRadius: '4px',
+      padding: 'var(--spacing-sm) var(--spacing-md)',
+      borderRadius: 'var(--border-radius)',
       cursor: 'pointer',
-      margin: '5px',
-      fontSize: '14px',
+      margin: 'var(--spacing-xs)',
+      fontSize: 'var(--font-size-base)',
+      fontWeight: 'var(--font-weight-normal)',
+      transition: 'background-color 0.15s ease-in-out, opacity 0.15s ease-in-out',
     },
     error: {
-      color: 'red',
-      marginTop: '10px',
+      color: 'var(--danger-color)',
+      marginTop: 'var(--spacing-md)',
+      fontSize: 'var(--font-size-sm)',
     }
   };
+
+  const primaryButtonStyle = { ...styles.button, backgroundColor: 'var(--primary-color)', color: 'white' };
+  const secondaryButtonStyle = { ...styles.button, backgroundColor: 'var(--secondary-text-color)', color: 'white' };
+  const successButtonStyle = { ...styles.button, backgroundColor: 'var(--success-color)', color: 'white' };
 
   const openCamera = async () => {
     setError('');
@@ -124,16 +131,16 @@ function CameraCapture() {
 
   return (
     <div style={styles.container}>
-      <h4>Camera Access</h4>
+      <h4 style={{marginBottom: 'var(--spacing-md)'}}>Camera Access</h4>
       {!stream && !capturedImage && (
-        <button style={styles.button} onClick={openCamera}>Open Camera</button>
+        <button style={primaryButtonStyle} onClick={openCamera}>Open Camera</button>
       )}
 
       {stream && (
         <div>
           <video ref={videoRef} autoPlay playsInline style={styles.video}></video>
-          <button style={styles.button} onClick={captureImage}>Capture Image</button>
-          <button style={{...styles.button, backgroundColor: '#6c757d'}} onClick={closeCamera}>Close Camera</button>
+          <button style={primaryButtonStyle} onClick={captureImage}>Capture Image</button>
+          <button style={secondaryButtonStyle} onClick={closeCamera}>Close Camera</button>
         </div>
       )}
 
@@ -141,12 +148,12 @@ function CameraCapture() {
 
       {capturedImage && (
         <div>
-          <h4>Captured Image Preview:</h4>
+          <h5 style={{marginTop: 'var(--spacing-lg)', marginBottom: 'var(--spacing-xs)'}}>Captured Image Preview:</h5>
           <img src={capturedImage} alt="Captured" style={styles.img} />
           <div>
-            <button style={styles.button} onClick={handleUploadPlaceholder}>Upload Image (Placeholder)</button>
-            <button style={{...styles.button, backgroundColor: '#6c757d'}} onClick={() => { setCapturedImage(null); setError(''); }}>Clear Capture</button>
-            <button style={{...styles.button, backgroundColor: '#28a745'}} onClick={openCamera}>Retake</button>
+            <button style={successButtonStyle} onClick={handleUploadPlaceholder}>Upload Image (Placeholder)</button>
+            <button style={secondaryButtonStyle} onClick={() => { setCapturedImage(null); setError(''); }}>Clear Capture</button>
+            <button style={primaryButtonStyle} onClick={openCamera}>Retake</button>
           </div>
         </div>
       )}

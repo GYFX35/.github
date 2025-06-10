@@ -1,6 +1,7 @@
+// src/components/ShopPage.jsx
 import React, { useState } from 'react';
 import ProductCard from './ProductCard';
-import ProductDetailView from './ProductDetailView'; // To potentially show details
+import ProductDetailView from './ProductDetailView';
 
 // Sample product data
 const sampleProducts = [
@@ -30,18 +31,32 @@ const sampleProducts = [
   },
 ];
 
+
 function ShopPage() {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const shopPageStyle = {
-    padding: '20px',
+  const pageStyle = {
+    padding: 'var(--spacing-md)',
+    // maxWidth: '1200px', // Optional: constrain width
+    // margin: '0 auto',
   };
 
   const productListStyle = {
     display: 'flex',
     flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: '15px',
+    justifyContent: 'center', // Or 'flex-start' for left alignment
+    gap: 'var(--spacing-md)', // Use theme spacing for gap
+  };
+
+  const backButtonStyle = {
+    backgroundColor: 'var(--secondary-color)',
+    color: 'white',
+    border: 'none',
+    padding: 'var(--spacing-sm) var(--spacing-md)',
+    borderRadius: 'var(--border-radius)',
+    cursor: 'pointer',
+    marginBottom: 'var(--spacing-lg)',
+    fontSize: 'var(--font-size-base)',
   };
 
   const handleDetailsClick = (productId) => {
@@ -51,20 +66,22 @@ function ShopPage() {
 
   if (selectedProduct) {
     return (
-      <div style={shopPageStyle}>
-        <button onClick={() => setSelectedProduct(null)} style={{ marginBottom: '20px', padding: '8px 12px' }}>
+      <div style={pageStyle}>
+        <button onClick={() => setSelectedProduct(null)} style={backButtonStyle}>
           &larr; Back to Shop
         </button>
+        {/* ProductDetailView will be themed in its own step */}
         <ProductDetailView product={selectedProduct} />
       </div>
     );
   }
 
   return (
-    <div style={shopPageStyle}>
+    <div style={pageStyle}>
       <h2>Shop Our Products</h2>
       <div style={productListStyle}>
         {sampleProducts.map(product => (
+          // ProductCard will be themed in its own step
           <ProductCard
             key={product.id}
             product={product}

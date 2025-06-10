@@ -1,42 +1,30 @@
-import './App.css';
+// src/App.jsx (Conceptual - assuming App.css handles most of .App styling)
+import './App.css'; // Ensure this is imported
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import NavigationBar from './components/NavigationBar';
 import Feed from './components/Feed';
 import UserProfile from './components/UserProfile';
 import Forums from './components/Forums';
-import ShopPage from './components/ShopPage'; // Import ShopPage
+import ShopPage from './components/ShopPage';
 
 function App() {
+  // The className="App" will be styled by App.css, which should complement index.css
   return (
     <Router>
-      <div className="App">
+      <div className="App"> {/* This div can have specific styles from App.css */}
         <NavigationBar />
-        <header className="App-header">
-          {/* Existing header content can be kept or removed */}
-          {/* <img src="Octocat.png" className="App-logo" alt="logo" />
-          <p>
-            GitHub Codespaces <span className="heart">♥️</span> React
-          </p>
-          <p className="small">
-            Edit <code>src/App.jsx</code> and save to reload.
-          </p>
-          <p>
-            <a
-              className="App-link"
-              href="https://reactjs.org"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learn React
-            </a>
-          </p> */}
-        </header>
-        <Routes>
-          <Route path="/" element={<Feed />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/forums" element={<Forums />} />
-              <Route path="/shop" element={<ShopPage />} /> {/* Add ShopPage route */}
-        </Routes>
+        {/* The header element was largely commented out,
+            if it were active, its styles would also be reviewed.
+            For now, App.jsx is mainly a router and container.
+        */}
+        <main style={{ padding: 'var(--spacing-md)' }}> {/* Added main with padding */}
+          <Routes>
+            <Route path="/" element={<Feed />} />
+            <Route path="/profile" element={<UserProfile />} />
+            <Route path="/forums" element={<Forums />} />
+            <Route path="/shop" element={<ShopPage />} />
+          </Routes>
+        </main>
       </div>
     </Router>
   );
