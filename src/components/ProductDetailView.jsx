@@ -1,10 +1,7 @@
+// src/components/ProductDetailView.jsx
 import React from 'react';
+import ShareButton from './ShareButton'; // Import ShareButton
 
-/**
- * Placeholder component for displaying detailed information about a single product.
- * Props:
- *  - product (object): Contains product details { id, name, price, imageUrl, longDescription }
- */
 function ProductDetailView({ product }) {
   const viewStyle = {
     padding: '20px',
@@ -39,10 +36,16 @@ function ProductDetailView({ product }) {
     marginTop: '20px',
     fontWeight: 'bold',
   };
+  const shareButtonContainerStyle = { marginTop: '15px' };
+
 
   if (!product) {
     return <div style={viewStyle}><p>Select a product to see details.</p></div>;
   }
+
+  // For product sharing, use window.location.href to get the current page URL
+  // In a more advanced setup with unique routes per product, this URL would be more specific.
+  const productShareUrl = window.location.href;
 
   return (
     <div style={viewStyle}>
@@ -50,20 +53,24 @@ function ProductDetailView({ product }) {
       <div style={imageStyle}>
         {product.imageUrl ? <img src={product.imageUrl} alt={product.name} style={{maxWidth: '100%', maxHeight: '100%', borderRadius: '4px'}} /> : <span>Product Image Placeholder</span>}
       </div>
-      <p>{product.longDescription || "This is a more detailed description of the product, highlighting its features, benefits, and other relevant information. This section would typically be populated with rich text or markdown."}</p>
+      <p>{product.longDescription || "This is a more detailed description..."}</p>
       <p><strong>Price: ${product.price ? product.price.toFixed(2) : "0.00"}</strong></p>
-      {/*
-        This button is a placeholder. In a real implementation, clicking this would
-        initiate the Flutterwave payment process.
-        The actual Flutterwave integration logic (calling FlutterwaveCheckout)
-        would be handled here or in a parent component that manages state.
-      */}
+
       <button
         style={flutterwaveButtonStyle}
         onClick={() => alert(`Initiate Flutterwave payment for ${product.name} - Price: $${product.price.toFixed(2)} (Placeholder)`)}
       >
         Pay with Flutterwave
       </button>
+
+      <div style={shareButtonContainerStyle}>
+        <ShareButton
+          title={`Check out ${product.name || "this product"}!`}
+          text={`I found this amazing product: ${product.name || "Product Name"} - ${product.shortDescription || ""}`}
+          url={productShareUrl} // Uses the current page URL for the product
+          buttonText="Share Product"
+        />
+      </div>
     </div>
   );
 }
