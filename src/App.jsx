@@ -6,6 +6,7 @@ import Feed from './components/Feed';
 import UserProfile from './components/UserProfile';
 import Forums from './components/Forums';
 import ShopPage from './components/ShopPage';
+import ChatbotPage from './components/ChatbotPage'; // Import ChatbotPage
 
 function App() {
   // The className="App" will be styled by App.css, which should complement index.css
@@ -23,6 +24,7 @@ function App() {
             <Route path="/profile" element={<UserProfile />} />
             <Route path="/forums" element={<Forums />} />
             <Route path="/shop" element={<ShopPage />} />
+                <Route path="/chatbot" element={<ChatbotPage />} /> {/* Add ChatbotPage route */}
           </Routes>
         </main>
       </div>

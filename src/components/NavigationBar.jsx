@@ -39,6 +39,7 @@ function NavigationBar() {
         <li><Link to="/profile" style={linkStyle}>Profile</Link></li>
         <li><Link to="/forums" style={linkStyle}>Forums</Link></li>
         <li><Link to="/shop" style={linkStyle}>Shop</Link></li>
+            <li><Link to="/chatbot" style={linkStyle}>Chatbot</Link></li> {/* Add Chatbot link */}
       </ul>
       <ShareButton
         title="Check out this Health & Wellbeing Platform!"
