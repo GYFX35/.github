@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async'; // Import Helmet
 import MagazineHome from './pages/MagazineHome';
 import MagazineArticle from './pages/MagazineArticle';
+import CapturePage from './pages/CapturePage'; // Import CapturePage
 
 // THIS IS WHERE THE USER NEEDS TO PASTE THEIR VAPID PUBLIC KEY
 const VAPID_PUBLIC_KEY = 'YOUR_VAPID_PUBLIC_KEY_GOES_HERE';
@@ -153,6 +154,7 @@ function App() {
             <ul>
               <li><Link to="/">Home</Link></li>
               <li><Link to="/magazine">Customer Magazine</Link></li>
+              <li><Link to="/capture">Capture</Link></li> {/* Add Link for CapturePage */}
             </ul>
           </nav>
           {deferredPrompt && (
@@ -182,6 +184,7 @@ function App() {
         <Routes>
           <Route path="/magazine" element={<MagazineHome />} />
           <Route path="/magazine/article/:id" element={<MagazineArticle />} />
+          <Route path="/capture" element={<CapturePage />} /> {/* Add Route for CapturePage */}
           <Route path="/" element={
             <> {/* Use Fragment to wrap Helmet and content */}
               <Helmet>
