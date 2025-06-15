@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react'; // Ensure useEffect is imported if used for other things
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'; // Import Helmet
 import MagazineHome from './pages/MagazineHome';
 import MagazineArticle from './pages/MagazineArticle';
 
@@ -28,6 +29,24 @@ function App() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   const [isSubscribed, setIsSubscribed] = useState(false);
+
+  const siteUrl = 'https://your-pwa-domain.com'; // Placeholder - user must update
+
+  const webSiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": siteUrl,
+    "name": "Customer Magazine App", // Matches default title
+    // Optional: if you have a search URL for your site
+    // "potentialAction": {
+    //   "@type": "SearchAction",
+    //   "target": {
+    //     "@type": "EntryPoint",
+    //     "urlTemplate": `${siteUrl}/search?q={search_term_string}`
+    //   },
+    //   "query-input": "required name=search_term_string"
+    // }
+  };
 
   useEffect(() => {
     const handler = (e) => {
@@ -116,6 +135,14 @@ function App() {
 
   return (
     <Router>
+      <Helmet>
+        <title>Customer Magazine App</title> {/* Default/Fallback Title */}
+        <meta name="description" content="Welcome to the Customer Magazine App. Explore our articles and features." /> {/* Default/Fallback Description */}
+        {/* Add JSON-LD structured data for WebSite */}
+        <script type="application/ld+json">
+          {JSON.stringify(webSiteSchema)}
+        </script>
+      </Helmet>
       <div className="App">
         <header className="App-header">
           <img src="Octocat.png" className="App-logo" alt="logo" />
@@ -156,16 +183,22 @@ function App() {
           <Route path="/magazine" element={<MagazineHome />} />
           <Route path="/magazine/article/:id" element={<MagazineArticle />} />
           <Route path="/" element={
-            <div>
-              <p className="small">
-                Edit <code>src/App.jsx</code> and save to reload.
-              </p>
-              <p>
-                <a className="App-link" href="https://reactjs.org" target="_blank" rel="noopener noreferrer">
-                  Learn React
-                </a>
-              </p>
-            </div>
+            <> {/* Use Fragment to wrap Helmet and content */}
+              <Helmet>
+                <title>Home - Customer Magazine App</title>
+                <meta name="description" content="Homepage of the Customer Magazine. Your source for interesting content." />
+              </Helmet>
+              <div> {/* Original content for home path */}
+                <p className="small">
+                  Edit <code>src/App.jsx</code> and save to reload.
+                </p>
+                <p>
+                  <a className="App-link" href="https://reactjs.org" target="_blank" rel="noopener noreferrer">
+                    Learn React
+                  </a>
+                </p>
+              </div>
+            </>
           } />
         </Routes>
       </div>

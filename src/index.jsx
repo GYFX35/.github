@@ -1,13 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async'; // Import
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// ... (service worker registration code might be here) ...
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <HelmetProvider> {/* Wrap App with HelmetProvider */}
+      <App />
+    </HelmetProvider>
   </React.StrictMode>
 );
 

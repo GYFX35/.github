@@ -1,3 +1,9 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: / # Explicitly state that everything is allowed, which is good practice.
+Disallow: # No paths disallowed for general crawlers.
+
+# Optional: Add a crawl-delay if you find crawlers are too aggressive, but usually not needed.
+# Crawl-delay: 1
+
+Sitemap: https://your-pwa-domain.com/sitemap.xml # IMPORTANT: User will need to replace 'your-pwa-domain.com' with their actual domain.

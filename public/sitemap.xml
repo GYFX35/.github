@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://your-pwa-domain.com/</loc>
+    <lastmod>2023-10-27</lastmod> {/* Example date, user should update or use build date */}
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://your-pwa-domain.com/magazine</loc>
+    <lastmod>2023-10-27</lastmod> {/* Example date */}
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  {/*
+  For dynamic article pages, these would ideally be listed here.
+  Example for a specific article (if it were static or prerendered):
+  <url>
+    <loc>https://your-pwa-domain.com/magazine/article/some-article-slug</loc>
+    <lastmod>2023-10-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  */}
+</urlset>
