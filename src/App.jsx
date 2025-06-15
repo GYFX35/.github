@@ -1,25 +1,57 @@
-import React, { useState, useEffect } from 'react'; // Add useState, useEffect
+// src/App.jsx
+import React, { useState, useEffect } from 'react'; // Ensure useEffect is imported if used for other things
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import MagazineHome from './pages/MagazineHome';
 import MagazineArticle from './pages/MagazineArticle';
-// Keep the original Octocat image import if you want to use it
-// import octocatLogo from '/Octocat.png'; // Or from 'public/Octocat.png' - path might need adjustment
+
+// THIS IS WHERE THE USER NEEDS TO PASTE THEIR VAPID PUBLIC KEY
+const VAPID_PUBLIC_KEY = 'YOUR_VAPID_PUBLIC_KEY_GOES_HERE';
+
+// Helper function to convert VAPID public key
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 function App() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
   useEffect(() => {
     const handler = (e) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e);
-      // Optionally, update UI to show a button or PWA install promotion
       console.log("'beforeinstallprompt' event was fired.");
     };
-
     window.addEventListener('beforeinstallprompt', handler);
+
+    // Check current subscription status on load
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.pushManager.getSubscription().then(subscription => {
+          if (subscription) {
+            setIsSubscribed(true);
+            console.log('User IS subscribed on page load.');
+          } else {
+            setIsSubscribed(false);
+            console.log('User IS NOT subscribed on page load.');
+          }
+        });
+      });
+    }
+
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
@@ -27,65 +59,109 @@ function App() {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) {
-      return;
-    }
-    // Show the install prompt
+    if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
     console.log(`User response to the install prompt: ${outcome}`);
-    // We've used the prompt, and can't use it again, discard it
     setDeferredPrompt(null);
+  };
+
+  const handleEnableNotifications = async () => {
+    if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+      alert('Push Notifications are not supported by this browser.');
+      return;
+    }
+
+    if (VAPID_PUBLIC_KEY === 'YOUR_VAPID_PUBLIC_KEY_GOES_HERE') {
+      alert('Please replace YOUR_VAPID_PUBLIC_KEY in App.jsx with your actual VAPID public key.');
+      console.error('VAPID_PUBLIC_KEY is not set. Cannot subscribe to push notifications.');
+      return;
+    }
+
+    try {
+      const permissionResult = await Notification.requestPermission();
+      setNotificationPermission(permissionResult);
+
+      if (permissionResult === 'granted') {
+        console.log('Notification permission granted.');
+        const registration = await navigator.serviceWorker.ready;
+        console.log('Service Worker ready.');
+
+        const existingSubscription = await registration.pushManager.getSubscription();
+        if (existingSubscription) {
+          console.log('User is already subscribed:', existingSubscription);
+          setIsSubscribed(true);
+          alert('You are already subscribed to notifications.');
+        } else {
+          console.log('Subscribing to push notifications...');
+          const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+          });
+          console.log('User is subscribed:', subscription);
+          setIsSubscribed(true);
+          alert('Successfully subscribed to notifications!');
+          // TODO: Send this subscription object to your application server!
+          // Example: fetch('/api/subscribe', { method: 'POST', body: JSON.stringify(subscription), headers: {'Content-Type': 'application/json'} });
+        }
+      } else {
+        console.warn('Notification permission denied.');
+        alert('Notification permission was denied. You will not receive updates.');
+      }
+    } catch (error) {
+      console.error('Error during notification setup:', error);
+      alert('Failed to set up notifications. See console for details.');
+    }
   };
 
   return (
     <Router>
       <div className="App">
         <header className="App-header">
-          {/* You can keep or modify the existing header content */}
           <img src="Octocat.png" className="App-logo" alt="logo" />
           <p>
             GitHub Codespaces <span className="heart">♥️</span> React
           </p>
-
           <nav>
             <ul>
-              <li>
-                <Link to="/">Home</Link>
-              </li>
-              <li>
-                <Link to="/magazine">Customer Magazine</Link>
-              </li>
+              <li><Link to="/">Home</Link></li>
+              <li><Link to="/magazine">Customer Magazine</Link></li>
             </ul>
           </nav>
           {deferredPrompt && (
-            <button
-              onClick={handleInstallClick}
-              style={{ marginLeft: '20px', padding: '10px' }} // Basic styling
-            >
+            <button onClick={handleInstallClick} style={{ marginLeft: '20px', padding: '10px' }}>
               Install App
             </button>
           )}
-        </header>
+          {/* Notification Button Logic */}
+          {notificationPermission === 'default' && !isSubscribed && (
+             <button onClick={handleEnableNotifications} style={{ marginLeft: '20px', padding: '10px' }}>
+               Enable Notifications
+             </button>
+          )}
+          {notificationPermission === 'granted' && !isSubscribed && (
+             <button onClick={handleEnableNotifications} style={{ marginLeft: '20px', padding: '10px' }}>
+               Subscribe to Notifications
+             </button>
+          )}
+           {isSubscribed && (
+             <p style={{ fontSize: 'small', marginLeft: '20px', color: 'lightgreen' }}>Notifications Enabled!</p>
+          )}
+           {notificationPermission === 'denied' && (
+             <p style={{ fontSize: 'small', marginLeft: '20px', color: 'orange' }}>Notifications Denied.</p>
+          )}
 
-        {/* Define the routes */}
+        </header>
         <Routes>
           <Route path="/magazine" element={<MagazineHome />} />
           <Route path="/magazine/article/:id" element={<MagazineArticle />} />
-          {/* You might want a default Home page component for the "/" path */}
           <Route path="/" element={
             <div>
               <p className="small">
                 Edit <code>src/App.jsx</code> and save to reload.
               </p>
               <p>
-                <a
-                  className="App-link"
-                  href="https://reactjs.org"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a className="App-link" href="https://reactjs.org" target="_blank" rel="noopener noreferrer">
                   Learn React
                 </a>
               </p>
