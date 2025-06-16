@@ -1,0 +1,102 @@
+/* src/components/ProductCard.css */
+.product-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden; /* To contain child elements with border-radius */
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none; /* In case Link component doesn't remove it */
+  color: inherit; /* In case Link component changes it */
+}
+
+.product-card:hover {
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transform: translateY(-5px);
+}
+
+.product-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Make the link area take up space before button */
+}
+
+.product-card-image-container {
+  width: 100%;
+  padding-top: 75%; /* Aspect ratio 4:3 (e.g., 300px height for 400px width) */
+  /* For 1:1 aspect ratio, use 100% */
+  position: relative;
+  background-color: #f0f0f0; /* Placeholder color */
+}
+
+.product-card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Or 'contain' depending on desired image display */
+}
+
+.product-card-content {
+  padding: 15px;
+  text-align: left;
+}
+
+.product-card-name {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 8px;
+  /* Limit to 2 lines with ellipsis if too long */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.4em; /* Assuming line height of 1.2em, for 2 lines */
+}
+
+.product-card-price {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #007bff; /* Primary color */
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.product-card-description { /* Optional, if you add it back to JSX */
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-card-details-btn {
+  display: block;
+  width: calc(100% - 30px); /* Full width minus padding */
+  margin: 0 15px 15px 15px; /* Match content padding */
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.product-card-details-btn:hover {
+  background-color: #0056b3;
+}

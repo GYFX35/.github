@@ -7,6 +7,8 @@ import MagazineHome from './pages/MagazineHome';
 import MagazineArticle from './pages/MagazineArticle';
 import CapturePage from './pages/CapturePage';
 import SponsorshipPage from './pages/SponsorshipPage'; // Import SponsorshipPage
+import ProductsPage from './pages/ProductsPage'; // Import ProductsPage
+import ProductDetailPage from './pages/ProductDetailPage'; // Import ProductDetailPage
 import AIChatbot from './components/AIChatbot'; // Import the chatbot
 import './components/AIChatbot.css'; // Import its CSS
 
@@ -173,7 +175,8 @@ function App() {
               <li><Link to="/">Home</Link></li>
               <li><Link to="/magazine">Customer Magazine</Link></li>
               <li><Link to="/capture">Capture</Link></li>
-              <li><Link to="/sponsorship">Sponsor Us</Link></li> {/* Add Link */}
+              <li><Link to="/sponsorship">Sponsor Us</Link></li>
+              <li><Link to="/products">Products</Link></li> {/* Add Link */}
             </ul>
           </nav>
           {deferredPrompt && (
@@ -210,7 +213,9 @@ function App() {
             }
           />
           <Route path="/capture" element={<CapturePage />} />
-          <Route path="/sponsorship" element={<SponsorshipPage />} /> {/* Add Route */}
+          <Route path="/sponsorship" element={<SponsorshipPage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/product/:slug" element={<ProductDetailPage />} /> {/* Add Route */}
           <Route path="/" element={
             <>
               <Helmet>
