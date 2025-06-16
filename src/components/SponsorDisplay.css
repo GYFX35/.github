@@ -1,0 +1,58 @@
+/* src/components/SponsorDisplay.css */
+.sponsor-display-section {
+  padding: 30px 20px;
+  text-align: center;
+  background-color: #f0f0f0; /* Light grey background to distinguish the section */
+  margin-top: 40px;
+}
+
+.sponsor-display-section h2 {
+  font-size: 1.8em;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.sponsors-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 30px; /* Spacing between sponsor items */
+}
+
+.sponsor-item {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  min-width: 180px; /* Minimum width for each sponsor item */
+  text-align: center;
+}
+
+.sponsor-item a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.sponsor-logo {
+  max-width: 150px; /* Max width of the logo */
+  max-height: 80px; /* Max height of the logo */
+  margin-bottom: 10px;
+  object-fit: contain; /* Ensure logo aspect ratio is maintained */
+}
+
+.sponsor-name {
+  font-size: 1em;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+/* Optional styling for sponsor tier, if displayed */
+/*
+.sponsor-tier {
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 5px;
+}
+*/

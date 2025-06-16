@@ -6,6 +6,7 @@ import { Helmet } from 'react-helmet-async';
 import MagazineHome from './pages/MagazineHome';
 import MagazineArticle from './pages/MagazineArticle';
 import CapturePage from './pages/CapturePage';
+import SponsorshipPage from './pages/SponsorshipPage'; // Import SponsorshipPage
 import AIChatbot from './components/AIChatbot'; // Import the chatbot
 import './components/AIChatbot.css'; // Import its CSS
 
@@ -172,6 +173,7 @@ function App() {
               <li><Link to="/">Home</Link></li>
               <li><Link to="/magazine">Customer Magazine</Link></li>
               <li><Link to="/capture">Capture</Link></li>
+              <li><Link to="/sponsorship">Sponsor Us</Link></li> {/* Add Link */}
             </ul>
           </nav>
           {deferredPrompt && (
@@ -208,6 +210,7 @@ function App() {
             }
           />
           <Route path="/capture" element={<CapturePage />} />
+          <Route path="/sponsorship" element={<SponsorshipPage />} /> {/* Add Route */}
           <Route path="/" element={
             <>
               <Helmet>

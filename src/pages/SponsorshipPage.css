@@ -1,0 +1,86 @@
+/* src/pages/SponsorshipPage.css */
+.sponsorship-page {
+  padding: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.sponsorship-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.sponsorship-header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
+.sponsorship-tiers-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.sponsorship-tier-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 25px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.sponsorship-tier-card h2 {
+  font-size: 1.8em;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.sponsorship-tier-card .tier-price {
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #007bff; /* Primary color */
+  margin-bottom: 15px;
+}
+
+.sponsorship-tier-card .tier-description {
+    font-size: 0.95em;
+    color: #555;
+    margin-bottom: 20px;
+    flex-grow: 1; /* Makes description take available space */
+}
+
+.sponsorship-tier-card .tier-benefits {
+  list-style-type: disc; /* Or '✓ ' using ::before for custom bullets */
+  padding-left: 20px;
+  margin-bottom: 25px;
+  font-size: 0.9em;
+  flex-grow: 1; /* Makes benefits list take available space */
+}
+
+.sponsorship-tier-card .tier-benefits li {
+    margin-bottom: 8px;
+}
+
+.google-pay-button-placeholder {
+  background-color: #555; /* Placeholder style, actual GPay button has its own style */
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-size: 1em;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s ease;
+  margin-top: auto; /* Pushes button to the bottom of the card */
+}
+
+.google-pay-button-placeholder:hover {
+  background-color: #333;
+}

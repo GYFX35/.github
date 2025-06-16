@@ -3,6 +3,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom'; // Import Link
 import mockArticles from '../data/mockArticles'; // Import mock articles
+import SponsorDisplay from '../components/SponsorDisplay'; // Import SponsorDisplay
 
 function MagazineHome() {
   const placeholderAffiliateLink = "https://placeholder-affiliate-link.com/homepage-deal";
@@ -64,6 +65,10 @@ function MagazineHome() {
           <p>No articles available at the moment. Please check back soon!</p>
         )}
       </div>
+
+      {/* Add SponsorDisplay section */}
+      <SponsorDisplay />
+
     </div>
   );
 }
