@@ -4,28 +4,64 @@ import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from 'react-router-dom'; // Import Link
 import mockArticles from '../data/mockArticles'; // Import mock articles
 
-function MagazineArticle() {
+// Accept new props
+function MagazineArticle({ openChatbot, sendMessageToBot }) {
   const { slug } = useParams(); // Now using slug
   const article = mockArticles.find(art => art.slug === slug);
 
   // Default content if article not found
   let pageTitle = "Article Not Found - Customer Magazine App";
   let pageDescription = "The article you are looking for could not be found.";
-  let articleDisplay = (
+  let articleDisplayContent = ( // Renamed from articleDisplay to avoid conflict
     <div>
       <h1>Article Not Found</h1>
       <p>The article you are looking for could not be found. Please check the URL or <Link to="/magazine">go back to the magazine home</Link>.</p>
     </div>
   );
 
+  const handleSummarizeClick = () => {
+    if (!article) return;
+
+    if (openChatbot) {
+      openChatbot();
+    }
+
+    if (sendMessageToBot) {
+      const summaryRequestMessage = `Tell me about the article: "${article.title}"`; // User-friendly request
+      sendMessageToBot(summaryRequestMessage, 'summarize_article', {
+        title: article.title,
+        slug: article.slug,
+        // Pass a snippet or key points if full content is too long for a mock prompt.
+        // For a real backend, you'd just send the slug/ID.
+        contentSnippet: article.excerpt || article.content.substring(0, 200) + "..."
+      });
+    } else {
+      console.error("Chatbot interaction functions not passed to MagazineArticle component.");
+      alert("Chatbot interaction is currently unavailable.");
+    }
+  };
+
   if (article) {
     pageTitle = `${article.title} - Customer Magazine App`;
     // Using excerpt for meta description, or you could generate one from content
     pageDescription = article.excerpt || article.title;
 
-    articleDisplay = (
+    articleDisplayContent = (
       <>
         <h1>{article.title}</h1>
+        {sendMessageToBot && openChatbot && ( // Only show button if functions are available
+          <button onClick={handleSummarizeClick} style={{
+            padding: '8px 12px',
+            margin: '10px 0 20px 0',
+            cursor: 'pointer',
+            backgroundColor: '#6c757d', // A different color
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px'
+          }}>
+            🤖 Ask AI about this Article
+          </button>
+        )}
         {article.featuredImage && (
           <img
             src={article.featuredImage}
@@ -72,7 +108,6 @@ function MagazineArticle() {
           </div>
         )}
 
-        {/* Example of keeping the placeholder affiliate link, perhaps conditional */}
         { (article.slug === "mastering-customer-engagement-partner" || article.slug === "future-of-web-dev-2024") &&
           <div style={{ marginTop: '30px', padding: '15px', borderTop: '1px dashed #ccc', clear: 'both' }}>
             <p>
@@ -105,7 +140,7 @@ function MagazineArticle() {
         {/* Add other article-specific meta tags if needed */}
       </Helmet>
 
-      {articleDisplay}
+      {articleDisplayContent}
 
       <div style={{ marginTop: '30px', clear: 'both' }}>
         <Link to="/magazine">← Back to Magazine Home</Link>

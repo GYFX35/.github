@@ -1,11 +1,13 @@
 // src/App.jsx
-import React, { useState, useEffect } from 'react'; // Ensure useEffect is imported if used for other things
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async'; // Import Helmet
+import { Helmet } from 'react-helmet-async';
 import MagazineHome from './pages/MagazineHome';
 import MagazineArticle from './pages/MagazineArticle';
-import CapturePage from './pages/CapturePage'; // Import CapturePage
+import CapturePage from './pages/CapturePage';
+import AIChatbot from './components/AIChatbot'; // Import the chatbot
+import './components/AIChatbot.css'; // Import its CSS
 
 // THIS IS WHERE THE USER NEEDS TO PASTE THEIR VAPID PUBLIC KEY
 const VAPID_PUBLIC_KEY = 'YOUR_VAPID_PUBLIC_KEY_GOES_HERE';
@@ -31,6 +33,11 @@ function App() {
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
+  const [isChatbotVisible, setIsChatbotVisible] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [isChatbotLoading, setIsChatbotLoading] = useState(false);
+
+
   const siteUrl = 'https://your-pwa-domain.com'; // Placeholder - user must update
 
   const webSiteSchema = {
@@ -38,15 +45,6 @@ function App() {
     "@type": "WebSite",
     "url": siteUrl,
     "name": "Customer Magazine App", // Matches default title
-    // Optional: if you have a search URL for your site
-    // "potentialAction": {
-    //   "@type": "SearchAction",
-    //   "target": {
-    //     "@type": "EntryPoint",
-    //     "urlTemplate": `${siteUrl}/search?q={search_term_string}`
-    //   },
-    //   "query-input": "required name=search_term_string"
-    // }
   };
 
   useEffect(() => {
@@ -57,7 +55,6 @@ function App() {
     };
     window.addEventListener('beforeinstallprompt', handler);
 
-    // Check current subscription status on load
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       navigator.serviceWorker.ready.then(registration => {
         registration.pushManager.getSubscription().then(subscription => {
@@ -71,8 +68,6 @@ function App() {
         });
       });
     }
-
-
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
     };
@@ -91,22 +86,18 @@ function App() {
       alert('Push Notifications are not supported by this browser.');
       return;
     }
-
     if (VAPID_PUBLIC_KEY === 'YOUR_VAPID_PUBLIC_KEY_GOES_HERE') {
       alert('Please replace YOUR_VAPID_PUBLIC_KEY in App.jsx with your actual VAPID public key.');
       console.error('VAPID_PUBLIC_KEY is not set. Cannot subscribe to push notifications.');
       return;
     }
-
     try {
       const permissionResult = await Notification.requestPermission();
       setNotificationPermission(permissionResult);
-
       if (permissionResult === 'granted') {
         console.log('Notification permission granted.');
         const registration = await navigator.serviceWorker.ready;
         console.log('Service Worker ready.');
-
         const existingSubscription = await registration.pushManager.getSubscription();
         if (existingSubscription) {
           console.log('User is already subscribed:', existingSubscription);
@@ -121,8 +112,6 @@ function App() {
           console.log('User is subscribed:', subscription);
           setIsSubscribed(true);
           alert('Successfully subscribed to notifications!');
-          // TODO: Send this subscription object to your application server!
-          // Example: fetch('/api/subscribe', { method: 'POST', body: JSON.stringify(subscription), headers: {'Content-Type': 'application/json'} });
         }
       } else {
         console.warn('Notification permission denied.');
@@ -134,12 +123,40 @@ function App() {
     }
   };
 
+  const toggleChatbot = () => {
+    setIsChatbotVisible(prev => !prev);
+    // If opening chatbot and it has no messages, add initial greeting from App context
+    if (!isChatbotVisible && chatMessages.length === 0) {
+        setChatMessages([{ sender: 'bot', text: 'Hello! How can I assist you from the App?' }]);
+    }
+  };
+
+  const handleSendMessageToBot = async (userMessage, type = 'user_query', articleDetails = null) => {
+    setChatMessages(prev => [...prev, { sender: 'user', text: userMessage }]);
+    setIsChatbotLoading(true);
+
+    setTimeout(() => {
+      let botResponseText = "I'm sorry, I didn't quite understand that. Could you rephrase?";
+      if (type === 'summarize_article' && articleDetails) {
+        botResponseText = `Okay, I will summarize the article titled: "${articleDetails.title}". Here is a mock summary: This article discusses many interesting points about ${articleDetails.slug} and concludes that further research is needed. (This is a mocked summary).`;
+      } else if (userMessage.toLowerCase().includes('hello') || userMessage.toLowerCase().includes('hi')) {
+        botResponseText = 'Hello there! How can I assist you today?';
+      } else if (userMessage.toLowerCase().includes('magazine')) {
+        botResponseText = 'You can find our latest articles on the Magazine Home page. Would you like a specific topic?';
+      } else if (userMessage.toLowerCase().includes('help')) {
+        botResponseText = 'I can help you find articles, summarize them (from an article page), or answer general questions. What do you need?';
+      }
+
+      setChatMessages(prev => [...prev, { sender: 'bot', text: botResponseText }]);
+      setIsChatbotLoading(false);
+    }, 1500);
+  };
+
   return (
     <Router>
       <Helmet>
-        <title>Customer Magazine App</title> {/* Default/Fallback Title */}
-        <meta name="description" content="Welcome to the Customer Magazine App. Explore our articles and features." /> {/* Default/Fallback Description */}
-        {/* Add JSON-LD structured data for WebSite */}
+        <title>Customer Magazine App</title>
+        <meta name="description" content="Welcome to the Customer Magazine App. Explore our articles and features." />
         <script type="application/ld+json">
           {JSON.stringify(webSiteSchema)}
         </script>
@@ -154,7 +171,7 @@ function App() {
             <ul>
               <li><Link to="/">Home</Link></li>
               <li><Link to="/magazine">Customer Magazine</Link></li>
-              <li><Link to="/capture">Capture</Link></li> {/* Add Link for CapturePage */}
+              <li><Link to="/capture">Capture</Link></li>
             </ul>
           </nav>
           {deferredPrompt && (
@@ -162,7 +179,6 @@ function App() {
               Install App
             </button>
           )}
-          {/* Notification Button Logic */}
           {notificationPermission === 'default' && !isSubscribed && (
              <button onClick={handleEnableNotifications} style={{ marginLeft: '20px', padding: '10px' }}>
                Enable Notifications
@@ -179,19 +195,26 @@ function App() {
            {notificationPermission === 'denied' && (
              <p style={{ fontSize: 'small', marginLeft: '20px', color: 'orange' }}>Notifications Denied.</p>
           )}
-
         </header>
         <Routes>
           <Route path="/magazine" element={<MagazineHome />} />
-          <Route path="/magazine/article/:slug" element={<MagazineArticle />} />
-          <Route path="/capture" element={<CapturePage />} /> {/* Add Route for CapturePage */}
+          <Route
+            path="/magazine/article/:slug"
+            element={
+              <MagazineArticle
+                openChatbot={() => setIsChatbotVisible(true)}
+                sendMessageToBot={handleSendMessageToBot}
+              />
+            }
+          />
+          <Route path="/capture" element={<CapturePage />} />
           <Route path="/" element={
-            <> {/* Use Fragment to wrap Helmet and content */}
+            <>
               <Helmet>
                 <title>Home - Customer Magazine App</title>
                 <meta name="description" content="Homepage of the Customer Magazine. Your source for interesting content." />
               </Helmet>
-              <div> {/* Original content for home path */}
+              <div>
                 <p className="small">
                   Edit <code>src/App.jsx</code> and save to reload.
                 </p>
@@ -204,7 +227,38 @@ function App() {
             </>
           } />
         </Routes>
-      </div>
+      </div> {/* End of className="App" div */}
+
+      {/* Chatbot Toggle Button */}
+      {!isChatbotVisible && (
+        <button
+          onClick={toggleChatbot}
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            padding: '10px 20px',
+            borderRadius: '30px',
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+            cursor: 'pointer',
+            zIndex: 999 // Below chatbot widget but above other content
+          }}
+        >
+          Chat
+        </button>
+      )}
+
+      {/* AIChatbot Component */}
+      <AIChatbot
+        isVisible={isChatbotVisible}
+        onClose={toggleChatbot} // Use toggleChatbot to close
+        messages={chatMessages} // Pass App's chatMessages state
+        isLoading={isChatbotLoading} // Pass App's isChatbotLoading state
+        onSendMessage={handleSendMessageToBot}
+      />
     </Router>
   );
 }
