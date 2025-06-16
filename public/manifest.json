@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "AI Assistant",
+  "name": "AI Model Development Assistant",
+  "description": "An AI assistant to help with developing and training AI models.",
   "icons": [
     {
       "src": "favicon.ico",
