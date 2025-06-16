@@ -183,7 +183,7 @@ function App() {
         </header>
         <Routes>
           <Route path="/magazine" element={<MagazineHome />} />
-          <Route path="/magazine/article/:id" element={<MagazineArticle />} />
+          <Route path="/magazine/article/:slug" element={<MagazineArticle />} />
           <Route path="/capture" element={<CapturePage />} /> {/* Add Route for CapturePage */}
           <Route path="/" element={
             <> {/* Use Fragment to wrap Helmet and content */}

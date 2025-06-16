@@ -1,61 +1,114 @@
 // src/pages/MagazineArticle.jsx
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom'; // Import Link
+import mockArticles from '../data/mockArticles'; // Import mock articles
 
 function MagazineArticle() {
-  const { id } = useParams();
-  const articleBaseTitle = "In-Depth Look at Topic X"; // More specific base title
-  const articleIdText = id ? ` (ID: ${id})` : "";
-  const articleTitle = `${articleBaseTitle}${articleIdText}`;
+  const { slug } = useParams(); // Now using slug
+  const article = mockArticles.find(art => art.slug === slug);
 
-  // Improved description based on a more specific (though still placeholder) title
-  const articleDescription = `Explore the details of ${articleBaseTitle}. This article covers A, B, and C, and offers resources for further learning.`;
+  // Default content if article not found
+  let pageTitle = "Article Not Found - Customer Magazine App";
+  let pageDescription = "The article you are looking for could not be found.";
+  let articleDisplay = (
+    <div>
+      <h1>Article Not Found</h1>
+      <p>The article you are looking for could not be found. Please check the URL or <Link to="/magazine">go back to the magazine home</Link>.</p>
+    </div>
+  );
 
-  const placeholderAffiliateLink = "https://placeholder-affiliate-link.com/article-resource";
-  const placeholderResourceName = "Advanced Guide to Topic X";
+  if (article) {
+    pageTitle = `${article.title} - Customer Magazine App`;
+    // Using excerpt for meta description, or you could generate one from content
+    pageDescription = article.excerpt || article.title;
+
+    articleDisplay = (
+      <>
+        <h1>{article.title}</h1>
+        {article.featuredImage && (
+          <img
+            src={article.featuredImage}
+            alt={article.title}
+            style={{ width: '100%', maxWidth: '700px', height: 'auto', marginBottom: '20px', borderRadius: '5px' }}
+          />
+        )}
+        {/* Render HTML content from mock data. Ensure this HTML is trusted/sanitized in a real app. */}
+        <div className="article-content" dangerouslySetInnerHTML={{ __html: article.content }} />
+
+        {article.isGuestPost && (
+          <div className="guest-author-section" style={{
+            marginTop: '40px',
+            padding: '20px',
+            border: '1px solid #e0e0e0',
+            backgroundColor: '#f9f9f9',
+            borderRadius: '8px',
+            clear: 'both' // In case author image used float
+          }}>
+            <h3 style={{ marginTop: '0', marginBottom: '15px' }}>About the Guest Author</h3>
+            {article.authorImage && (
+              <img
+                src={article.authorImage}
+                alt={article.authorName}
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  float: 'left',
+                  marginRight: '20px',
+                  marginBottom: '10px'
+                }}
+              />
+            )}
+            <div style={{ overflow: 'hidden' }}> {/* To contain floats if authorImage is floated */}
+              <p style={{ fontWeight: 'bold', fontSize: '1.1em', margin: '0 0 5px 0' }}>{article.authorName}</p>
+              {article.authorBio && <p style={{ fontSize: '0.9em', margin: '0 0 10px 0' }}>{article.authorBio}</p>}
+              {article.authorWebsiteLink && (
+                <p style={{ fontSize: '0.9em', margin: '0' }}>
+                  Visit: <a href={article.authorWebsiteLink} target="_blank" rel="noopener noreferrer nofollow">{article.authorWebsiteLink}</a>
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Example of keeping the placeholder affiliate link, perhaps conditional */}
+        { (article.slug === "mastering-customer-engagement-partner" || article.slug === "future-of-web-dev-2024") &&
+          <div style={{ marginTop: '30px', padding: '15px', borderTop: '1px dashed #ccc', clear: 'both' }}>
+            <p>
+              Enjoying this article? You might also like this
+              {' '}
+              <a
+                href="https://placeholder-affiliate-link.com/article-contextual-deal"
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                style={{ color: '#007bff' }}
+              >
+                Specialized Course on {article.tags && article.tags.length > 0 ? article.tags[0] : "this Topic"}
+              </a>.
+              <span style={{ fontSize: '0.8em', color: '#777' }}> (Affiliate link)</span>
+            </p>
+          </div>
+        }
+      </>
+    );
+  }
 
   return (
     <div style={{ padding: '20px', lineHeight: '1.6' }}>
       <Helmet>
-        <title>{articleTitle} - Customer Magazine App</title>
-        <meta name="description" content={articleDescription} />
-        {/* For a real article, you might add more meta tags: */}
-        {/* <meta property="og:type" content="article" /> */}
-        {/* <meta property="article:published_time" content="2023-10-27T12:00:00Z" /> */}
-        {/* <meta property="article:author" content="Author Name" /> */}
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        {article && <meta name="keywords" content={article.tags ? article.tags.join(', ') : ""} />}
+        {article && article.isGuestPost && <meta name="author" content={article.authorName} />}
+        {article && <meta property="article:published_time" content={article.publishDate} />}
+        {/* Add other article-specific meta tags if needed */}
       </Helmet>
 
-      <h1>{articleTitle}</h1>
+      {articleDisplay}
 
-      <p>This is the beginning of our insightful article. We delve deep into various aspects of Topic X, providing comprehensive coverage for both beginners and experts.</p>
-
-      <p>Understanding the core concepts is crucial. We explain the fundamentals with clear examples and practical applications. Many find that a solid grasp here makes the advanced sections much more accessible.</p>
-
-      <p>
-        For those looking to truly master this subject, we highly recommend the
-        {' '}
-        <a
-          href={placeholderAffiliateLink}
-          target="_blank"
-          rel="noopener noreferrer sponsored"
-          style={{ color: '#007bff' }} // Simple styling for the link
-        >
-          {placeholderResourceName}
-        </a>.
-        It offers an unparalleled depth of information and practical exercises.
-        <span style={{ fontSize: '0.8em', color: '#777' }}> (Affiliate link: We may earn a commission.)</span>
-      </p>
-
-      <p>Further sections of this article will explore advanced techniques, case studies, and future trends related to Topic X. Stay tuned for more updates and detailed analysis.</p>
-
-      {/* More placeholder content */}
-      <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
-        <h3>Related Topics</h3>
-        <ul>
-          <li>Understanding Y</li>
-          <li>The Basics of Z</li>
-        </ul>
+      <div style={{ marginTop: '30px', clear: 'both' }}>
+        <Link to="/magazine">← Back to Magazine Home</Link>
       </div>
     </div>
   );
