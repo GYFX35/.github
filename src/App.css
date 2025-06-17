@@ -198,3 +198,85 @@
   background-color: #52b8d8;
   font-weight: bold;
 }
+
+/* AI Model Assistant - Code Generation Styles */
+.input-area .generate-code-button {
+  background-color: #4CAF50; /* Green */
+  margin-left: 8px;
+}
+
+.input-area .generate-code-button:hover {
+  background-color: #45a049;
+}
+
+.input-area .generate-code-button:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+}
+
+.loading-message {
+  margin-top: 15px;
+  font-style: italic;
+  color: #aaa;
+}
+
+.code-display-area {
+  background-color: #1e1e1e; /* Dark background for code */
+  color: #d4d4d4; /* Light text for code */
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+  text-align: left; /* Align code to the left */
+  position: relative; /* For positioning the copy button */
+}
+
+.code-display-area h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #61dafb; /* Match link color for heading */
+  font-size: 1.1rem;
+}
+
+.code-display-area pre {
+  margin: 0;
+  white-space: pre-wrap; /* Wrap long lines of code */
+  word-wrap: break-word; /* Break words if necessary */
+  max-height: 400px; /* Max height for scrollability */
+  overflow-y: auto; /* Add scroll if content exceeds max height */
+}
+
+.code-display-area code {
+  font-family: 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Language-specific styling can be added here if needed, e.g. for syntax highlighting libraries */
+.language-python {
+  /* Specific styles for Python if any, often handled by highlighter */
+}
+.language-javascript {
+  /* Specific styles for JS if any */
+}
+.language-text {
+    color: #ffcccb; /* Light red for error messages in code blocks */
+}
+
+
+.copy-code-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 6px 12px;
+  background-color: #61dafb;
+  color: #282c34;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.copy-code-button:hover {
+  background-color: #52b8d8;
+}

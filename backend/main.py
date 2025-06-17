@@ -1,6 +1,7 @@
 import os
+from typing import Optional
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -27,6 +28,16 @@ class QueryRequest(BaseModel):
 
 class QueryResponse(BaseModel):
     answer: str
+
+# Pydantic Models for Code Generation
+class CodeGenerationRequest(BaseModel):
+    description: str = Field(..., min_length=1, description="Description of the code to be generated.")
+    language: str = "python"
+    context: Optional[str] = None
+
+class CodeGenerationResponse(BaseModel):
+    generated_code: str
+    language: str
 
 # --- API Endpoints ---
 @app.post("/api/gemini_chat", response_model=QueryResponse)
@@ -83,6 +94,75 @@ async def gemini_chat_endpoint(request: QueryRequest):
         # Catch-all for other unexpected errors during the Gemini call
         print(f"Unexpected error during Gemini call: {type(e).__name__} - {e}") # Log this with type
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred with the AI assistant: {type(e).__name__}")
+
+
+@app.post("/api/generate_code", response_model=CodeGenerationResponse)
+async def generate_code_endpoint(request: CodeGenerationRequest):
+    """
+    Receives a code generation request, simulates a Gemini API call for code generation,
+    and returns the generated code.
+    """
+    if not GEMINI_API_KEY:
+        raise HTTPException(status_code=503, detail="GEMINI_API_KEY not configured. Please set it in your .env file.")
+
+    # Construct a placeholder prompt (actual Gemini prompt would be more sophisticated)
+    prompt = f"Generate {request.language} code for: {request.description}."
+    if request.context:
+        prompt += f" Additional context: {request.context}"
+
+    print(f"Simulated code generation prompt: {prompt}") # Log the simulated prompt
+
+    try:
+        # Simulate Gemini API call for code generation
+        simulated_code = f"# Simulated {request.language} code for: {request.description}\n"
+
+        if "load csv" in request.description.lower() and request.language.lower() == "python":
+            simulated_code += "import pandas as pd\n\n"
+            simulated_code += "# Load a CSV file\n"
+            simulated_code += "try:\n"
+            simulated_code += "    df = pd.read_csv('your_file.csv')\n"
+            simulated_code += "    print(df.head())\n"
+            simulated_code += "except FileNotFoundError:\n"
+            simulated_code += "    print(\"Error: 'your_file.csv' not found. Please specify the correct path.\")\n"
+            simulated_code += "except Exception as e:\n"
+            simulated_code += "    print(f\"An error occurred: {e}\")\n"
+
+        elif "logistic regression" in request.description.lower() and request.language.lower() == "python":
+            simulated_code += "from sklearn.linear_model import LogisticRegression\n"
+            simulated_code += "from sklearn.model_selection import train_test_split\n"
+            simulated_code += "from sklearn.metrics import accuracy_score\n"
+            simulated_code += "import numpy as np\n\n"
+            simulated_code += "# Sample data (replace with your actual data)\n"
+            simulated_code += "X = np.random.rand(100, 5) # 100 samples, 5 features\n"
+            simulated_code += "y = np.random.randint(0, 2, 100) # Binary target variable\n\n"
+            simulated_code += "# Split data\n"
+            simulated_code += "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n"
+            simulated_code += "# Initialize and train the model\n"
+            simulated_code += "model = LogisticRegression()\n"
+            simulated_code += "model.fit(X_train, y_train)\n\n"
+            simulated_code += "# Make predictions\n"
+            simulated_code += "predictions = model.predict(X_test)\n\n"
+            simulated_code += "# Evaluate the model\n"
+            simulated_code += "accuracy = accuracy_score(y_test, predictions)\n"
+            simulated_code += "print(f\"Model Accuracy: {accuracy:.2f}\")\n"
+
+        elif request.language.lower() == "javascript":
+            simulated_code += "// This is a simulated JavaScript function\n"
+            simulated_code += `function greet(name) {\n`
+            simulated_code += `  console.log("Hello, " + name + " from " + "${request.description}");\n`
+            simulated_code += `}\n`
+            simulated_code += `greet("Developer");\n`
+
+        else:
+            simulated_code += f"# Context: {request.context if request.context else 'No additional context provided.'}\n"
+            simulated_code += "print('Hello from generated code!')\n"
+
+        return CodeGenerationResponse(generated_code=simulated_code, language=request.language)
+
+    except Exception as e:
+        # Catch-all for unexpected errors during the simulated generation
+        print(f"Unexpected error during code generation: {type(e).__name__} - {e}") # Log this
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred during code generation: {type(e).__name__}")
 
 # --- How to run ---
 # 1. Create a .env file in the 'backend' directory with your GEMINI_API_KEY:
