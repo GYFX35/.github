@@ -4,21 +4,27 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import google.generativeai as genai
+from google.generativeai.types import generation_types
 
-# Load environment variables from .env file
+# --- Gemini API Configuration ---
+# Load environment variables from .env file (especially GEMINI_API_KEY)
 load_dotenv()
-
-# Configure Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# IMPORTANT: A valid GEMINI_API_KEY from a Google Cloud project with the
+# Gemini API enabled is required in your .env file for this application to work.
+# Example .env file content:
+# GEMINI_API_KEY="YOUR_ACTUAL_API_KEY_HERE"
+
 if GEMINI_API_KEY:
     try:
         genai.configure(api_key=GEMINI_API_KEY)
+        print("Gemini API key configured successfully.")
     except Exception as e:
-        print(f"Error configuring genai: {e}")
-        # Allow startup even if API key is invalid for now, endpoint will handle missing key
-        pass
+        print(f"Error configuring Gemini API key: {e} - This will likely cause issues with API calls.")
 else:
-    print("GEMINI_API_KEY not found in environment variables.")
+    print("WARNING: GEMINI_API_KEY not found in environment. API calls will fail.")
+# --- End Gemini API Configuration ---
 
 app = FastAPI()
 
@@ -50,49 +56,65 @@ async def gemini_chat_endpoint(request: QueryRequest):
         raise HTTPException(status_code=503, detail="GEMINI_API_KEY not configured. Please set it in your .env file.")
 
     user_query = request.query
+    assistant_response = ""
 
     try:
-        # This is where the actual genai.GenerativeModel('gemini-pro').generate_content(user_query) would go.
-        # For simulation of different errors:
-        if user_query.lower() == "simul_api_error":
-            # This could represent an error from Gemini like InvalidArgument, PermissionDenied, etc.
-            raise ValueError("Simulated API error from Gemini: Invalid query format.")
-        if user_query.lower() == "simul_rate_limit":
-            # This simulates a rate limit error from Gemini
-            raise genai.types.generation_types.BlockedPromptException("Simulated rate limit exceeded with Gemini.")
-        if user_query.lower() == "simul_network_error":
-            # In a real scenario, this might be a specific exception from an underlying HTTP client
-            raise ConnectionError("Simulated network error trying to reach Gemini services.")
-        if user_query.lower() == "simul_unknown_model":
-            # Simulating an error if the model name is wrong (though genai might raise a specific error)
-            raise NameError("Simulated error: Gemini model 'gemini-ultra-pro-max' not found.")
+        # Initialize the Gemini Model.
+        # 'gemini-pro' is a versatile model. You might explore other models like
+        # 'gemini-pro-vision' for multimodal tasks or specific code generation models
+        # if available and suited to your needs and API access.
+        # Ensure the chosen model is enabled for your Google Cloud project.
+        model = genai.GenerativeModel('gemini-pro')
+        # Consider adding safety_settings if specific configurations are needed
+        # safety_settings = [
+        #     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+        #     {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+        # ]
+        # response = model.generate_content(user_query, safety_settings=safety_settings)
+        response = model.generate_content(user_query)
 
-        # Current simulated response logic for successful cases:
-        if user_query.strip().lower() == "hello":
-            assistant_response = "Gemini says: Hello there! How can I help you today?"
-        else:
-            assistant_response = f"Gemini says: You asked '{user_query}'. (This is a simulated response)"
+        try:
+            assistant_response = response.text
+        except ValueError: # This can happen if the response is blocked.
+            # Check prompt_feedback for block reason
+            if response.prompt_feedback and response.prompt_feedback.block_reason:
+                assistant_response = f"Response blocked due to: {response.prompt_feedback.block_reason.name}. Please try a different query."
+            else:
+                # It's also possible that parts are empty due to a block, and .text fails.
+                # This case might be hit if .text fails for other reasons or if prompt_feedback is not informative.
+                assistant_response = "Response could not be generated. This might be due to safety filters or other reasons."
+
+        if not assistant_response and response.parts: # Fallback if .text was empty but parts exist
+             # This attempts to join text from parts, good for multi-part responses.
+             # However, if a part is blocked, it might not have a 'text' attribute or be empty.
+            try:
+                assistant_response = "".join(part.text for part in response.parts)
+            except AttributeError: # If a part doesn't have .text (e.g. a function call part)
+                 assistant_response = "Received a non-text response part. Please check backend logs."
+
+
+        # Final check if still no meaningful response and a block reason exists
+        if not assistant_response and response.prompt_feedback and response.prompt_feedback.block_reason:
+            assistant_response = f"Response blocked due to: {response.prompt_feedback.block_reason.name}. Please try a different query."
+
+        # If, after all checks, the response is empty, provide a generic message.
+        if not assistant_response:
+            assistant_response = "The AI assistant did not provide a text response. Please try rephrasing your query or check the backend logs."
 
         return QueryResponse(answer=assistant_response)
 
-    except genai.types.generation_types.BlockedPromptException as e:
-        # Specific exception for rate limits or blocked prompts if using the actual google-generativeai library
-        print(f"Gemini API Blocked Prompt Error: {e}") # Log this
-        raise HTTPException(status_code=429, detail=f"Too many requests or prompt blocked by Gemini: {e}")
-    except ConnectionError as e:
-        # More specific exception for network issues if your client library raises it
-        print(f"Network Error contacting Gemini: {e}") # Log this
-        raise HTTPException(status_code=504, detail=f"A network error occurred while contacting the AI assistant: {e}")
-    except ValueError as e:
-        # Example for other API-related errors that might indicate bad input
-        print(f"Gemini API ValueError: {e}") # Log this
-        raise HTTPException(status_code=400, detail=f"Error processing query by Gemini (e.g., bad input): {e}")
-    except NameError as e: # Catching the simulated unknown model
-        print(f"Gemini Model NameError: {e}") # Log this
-        raise HTTPException(status_code=500, detail=f"Configuration error with the AI assistant model: {e}")
+    except generation_types.BlockedPromptException as e:
+        print(f"Gemini API BlockedPromptException: {e}")
+        raise HTTPException(status_code=400, detail=f"Your query was blocked by content filters: {e}")
+    except generation_types.StopCandidateException as e: # If generation stops due to safety or other reasons
+        print(f"Gemini API StopCandidateException: {e}")
+        # The content might be in e.args[0].candidates[0].content.parts[0].text if it's a finish_reason related block
+        # For simplicity, return a generic message or parse 'e' if needed
+        assistant_response = f"Response generation stopped. This might be due to safety filters or reaching a stop condition. ({e})"
+        return QueryResponse(answer=assistant_response) # Return 200 with info, or raise 400
+        # raise HTTPException(status_code=400, detail=f"Response generation stopped due to safety or other reasons: {e}")
     except Exception as e:
-        # Catch-all for other unexpected errors during the Gemini call
-        print(f"Unexpected error during Gemini call: {type(e).__name__} - {e}") # Log this with type
+        print(f"Unexpected error during Gemini API call: {type(e).__name__} - {e}")
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred with the AI assistant: {type(e).__name__}")
 
 
@@ -105,64 +127,91 @@ async def generate_code_endpoint(request: CodeGenerationRequest):
     if not GEMINI_API_KEY:
         raise HTTPException(status_code=503, detail="GEMINI_API_KEY not configured. Please set it in your .env file.")
 
-    # Construct a placeholder prompt (actual Gemini prompt would be more sophisticated)
-    prompt = f"Generate {request.language} code for: {request.description}."
+    prompt_parts = [
+        f"Generate a high-quality code snippet in {request.language} for the following task:",
+        f"User's description: "{request.description}"",
+    ]
     if request.context:
-        prompt += f" Additional context: {request.context}"
+        prompt_parts.append(f"Additional context: "{request.context}"")
 
-    print(f"Simulated code generation prompt: {prompt}") # Log the simulated prompt
+    prompt_parts.extend([
+        "
+Important considerations for the generated code:",
+        "- Ensure the code is correct, efficient, and follows best practices for the language.",
+        "- Include clear and concise comments explaining key parts of the code.",
+        "- If the request implies creating functions or classes, define them properly.",
+        "- If specific libraries are commonly used for this task, please use them.",
+        "- Handle potential common errors or edge cases if appropriate for the request.",
+        "- The code should be directly usable. Do not include placeholder comments like '# your code here'.",
+        "- Output only the raw code block for the requested language, without any introductory or concluding sentences, or markdown code fences like ```python ... ```."
+    ])
+    final_prompt = "\n".join(prompt_parts)
+    print(f"--- Sending Code Generation Prompt to Gemini --- \n{final_prompt}\n-------------------------")
 
+    generated_code_text = ""
     try:
-        # Simulate Gemini API call for code generation
-        simulated_code = f"# Simulated {request.language} code for: {request.description}\n"
+        # Initialize the Gemini Model.
+        # 'gemini-pro' is a versatile model. You might explore other models like
+        # 'gemini-pro-vision' for multimodal tasks or specific code generation models
+        # if available and suited to your needs and API access.
+        # Ensure the chosen model is enabled for your Google Cloud project.
+        model = genai.GenerativeModel('gemini-pro') # Or a more code-specific model if available
+        # Configuration for code generation (more focused on generating code)
+        # Example: generation_config = genai.types.GenerationConfig(temperature=0.7)
+        # Then pass to model.generate_content(..., generation_config=generation_config)
+        # For this implementation, default generation settings are used.
+        generation_config = genai.types.GenerationConfig(
+            # temperature=0.4, # Lower temperature for more deterministic code
+            # top_p=1.0,
+            # top_k=32,
+            # max_output_tokens=2048, # Adjust as needed
+            # stop_sequences=["```"], # May not be needed if prompt asks for raw code
+        )
+        # response = model.generate_content(final_prompt, generation_config=generation_config)
+        response = model.generate_content(final_prompt)
 
-        if "load csv" in request.description.lower() and request.language.lower() == "python":
-            simulated_code += "import pandas as pd\n\n"
-            simulated_code += "# Load a CSV file\n"
-            simulated_code += "try:\n"
-            simulated_code += "    df = pd.read_csv('your_file.csv')\n"
-            simulated_code += "    print(df.head())\n"
-            simulated_code += "except FileNotFoundError:\n"
-            simulated_code += "    print(\"Error: 'your_file.csv' not found. Please specify the correct path.\")\n"
-            simulated_code += "except Exception as e:\n"
-            simulated_code += "    print(f\"An error occurred: {e}\")\n"
 
-        elif "logistic regression" in request.description.lower() and request.language.lower() == "python":
-            simulated_code += "from sklearn.linear_model import LogisticRegression\n"
-            simulated_code += "from sklearn.model_selection import train_test_split\n"
-            simulated_code += "from sklearn.metrics import accuracy_score\n"
-            simulated_code += "import numpy as np\n\n"
-            simulated_code += "# Sample data (replace with your actual data)\n"
-            simulated_code += "X = np.random.rand(100, 5) # 100 samples, 5 features\n"
-            simulated_code += "y = np.random.randint(0, 2, 100) # Binary target variable\n\n"
-            simulated_code += "# Split data\n"
-            simulated_code += "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n"
-            simulated_code += "# Initialize and train the model\n"
-            simulated_code += "model = LogisticRegression()\n"
-            simulated_code += "model.fit(X_train, y_train)\n\n"
-            simulated_code += "# Make predictions\n"
-            simulated_code += "predictions = model.predict(X_test)\n\n"
-            simulated_code += "# Evaluate the model\n"
-            simulated_code += "accuracy = accuracy_score(y_test, predictions)\n"
-            simulated_code += "print(f\"Model Accuracy: {accuracy:.2f}\")\n"
+        try:
+            generated_code_text = response.text
+        except ValueError: # Can occur if the response is blocked
+            if response.prompt_feedback and response.prompt_feedback.block_reason:
+                generated_code_text = f"// Code generation blocked due to: {response.prompt_feedback.block_reason.name}.\n// Please try a different description or context."
+            else:
+                generated_code_text = "// Code generation blocked or failed. No specific reason provided."
 
-        elif request.language.lower() == "javascript":
-            simulated_code += "// This is a simulated JavaScript function\n"
-            simulated_code += `function greet(name) {\n`
-            simulated_code += `  console.log("Hello, " + name + " from " + "${request.description}");\n`
-            simulated_code += `}\n`
-            simulated_code += `greet("Developer");\n`
+        if not generated_code_text and response.parts: # Fallback for parts if .text was empty
+            try:
+                generated_code_text = "".join(part.text for part in response.parts)
+            except AttributeError:
+                 generated_code_text = "// Received a non-text response part during code generation. Please check backend logs."
 
-        else:
-            simulated_code += f"# Context: {request.context if request.context else 'No additional context provided.'}\n"
-            simulated_code += "print('Hello from generated code!')\n"
 
-        return CodeGenerationResponse(generated_code=simulated_code, language=request.language)
+        if not generated_code_text and response.prompt_feedback and response.prompt_feedback.block_reason:
+            generated_code_text = f"// Code generation blocked due to: {response.prompt_feedback.block_reason.name}.\n// Please try a different description or context."
 
+        if not generated_code_text:
+            generated_code_text = f"// The AI assistant did not return any code for {request.language}.\n// Please try rephrasing your request or check the backend logs."
+
+        return CodeGenerationResponse(generated_code=generated_code_text, language=request.language)
+
+    except generation_types.BlockedPromptException as e:
+        print(f"Gemini API BlockedPromptException (Code Generation): {e}")
+        raise HTTPException(status_code=400, detail=f"Your code generation request was blocked by content filters: {e}")
+    except generation_types.StopCandidateException as e:
+        print(f"Gemini API StopCandidateException (Code Generation): {e}")
+        # If generation stopped, there might still be partial code in response.text or response.parts
+        # For now, we'll use what might have been extracted before the exception, or a generic message.
+        if not generated_code_text: # If text wasn't extracted before this exception
+             generated_code_text = f"// Code generation stopped prematurely. This might be due to safety filters or other limits. ({e})"
+        return CodeGenerationResponse(generated_code=generated_code_text, language=request.language)
     except Exception as e:
-        # Catch-all for unexpected errors during the simulated generation
-        print(f"Unexpected error during code generation: {type(e).__name__} - {e}") # Log this
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred during code generation: {type(e).__name__}")
+        print(f"Unexpected error during Gemini API call (Code Generation): {type(e).__name__} - {e}")
+        error_detail = f"An unexpected error occurred with the AI code generation: {type(e).__name__}"
+        # Return a comment in the code block about the error
+        return CodeGenerationResponse(
+            generated_code=f"// {error_detail}\n// Please check backend logs.",
+            language=request.language # Or a generic 'text' language
+        )
 
 # --- How to run ---
 # 1. Create a .env file in the 'backend' directory with your GEMINI_API_KEY:
