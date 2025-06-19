@@ -52,11 +52,12 @@
 }
 
 .message {
-  padding: 8px 12px;
-  border-radius: 18px;
-  margin-bottom: 8px;
+  padding: 0.6em 1em; /* Standardized padding */
+  border-radius: 15px; /* Standardized border-radius */
+  margin-bottom: 0.5em; /* Standardized margin */
   max-width: 70%;
   word-wrap: break-word;
+  line-height: 1.4; /* Added for better readability */
 }
 
 .message.user {
@@ -222,8 +223,8 @@
 }
 
 .code-display-area {
-  background-color: #1e1e1e; /* Dark background for code */
-  color: #d4d4d4; /* Light text for code */
+  /* Background and text color will be handled by the SyntaxHighlighter's theme (oneDark) */
+  /* Keep padding, border-radius, etc. for the container */
   padding: 15px;
   border-radius: 8px;
   margin-top: 20px;
@@ -239,20 +240,24 @@
 }
 
 .code-display-area pre {
-  margin: 0;
-  white-space: pre-wrap; /* Wrap long lines of code */
-  word-wrap: break-word; /* Break words if necessary */
-  max-height: 400px; /* Max height for scrollability */
-  overflow-y: auto; /* Add scroll if content exceeds max height */
+  margin: 0; /* Usually good to keep */
+  max-height: 400px; /* Control overall block height */
+  overflow-y: auto; /* Vertical scroll for block */
+  overflow-x: auto; /* Horizontal scroll for long lines, added in responsiveness */
+  /* white-space and word-wrap will be handled by SyntaxHighlighter or its theme. */
+  /* font-family, font-size, line-height will come from the theme. */
 }
 
+/* Specific styling for `code` tag inside SyntaxHighlighter is usually not needed,
+   as the theme and component props handle it. Remove if conflicting. */
 .code-display-area code {
-  font-family: 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  /* These are likely overridden or handled by the theme. Can be removed. */
+  /* font-family: 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace; */
+  /* font-size: 0.95rem; */
+  /* line-height: 1.5; */
 }
 
-/* Language-specific styling can be added here if needed, e.g. for syntax highlighting libraries */
+/* Language-specific styling from the previous setup might not be needed directly */
 .language-python {
   /* Specific styles for Python if any, often handled by highlighter */
 }
@@ -279,6 +284,220 @@
 
 .copy-code-button:hover {
   background-color: #52b8d8;
+}
+
+/* --- Responsive Design Adjustments --- */
+
+/* General adjustments for all chatbot containers and input areas */
+.chat-container,
+.educational-chatbot-container,
+.legal-chatbot-container {
+  /* max-width is already set, this helps on very small screens */
+  width: auto; /* Allow it to shrink from max-width */
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.input-area,
+.input-area-edu,
+.input-area-legal {
+  flex-wrap: wrap; /* Allow buttons to wrap if not enough space */
+}
+
+.input-area input,
+.input-area-edu input,
+.input-area-legal input {
+  min-width: 150px; /* Prevent input from becoming too small before wrapping */
+}
+
+.input-area button,
+.input-area-edu button,
+.input-area-legal button {
+  margin-top: 5px; /* Add some space if buttons wrap */
+}
+
+
+/* Medium screens (tablets, an
+d smaller desktops) */
+@media (max-width: 768px) {
+  .App-header {
+    min-height: auto; /* Allow header to shrink */
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .app-navigation {
+    display: flex;
+    flex-wrap: wrap; /* Allow buttons to wrap */
+    justify-content: center;
+    padding: 10px 0; /* Adjust padding */
+  }
+
+  .app-navigation button {
+    margin: 5px; /* Add margin for wrapped buttons */
+    font-size: 0.95rem; /* Slightly smaller font */
+  }
+
+  .chat-container,
+  .educational-chatbot-container,
+  .legal-chatbot-container {
+    padding: 15px;
+    /* width: 90%; */ /* Already handled by auto width and margin */
+  }
+
+  .educational-chatbot-container h2,
+  .legal-chatbot-container h2,
+  .chat-container h3 { /* Added h3 for model assistant title */
+    font-size: 1.6rem; /* Adjust heading sizes */
+  }
+
+  .message-display-area,
+  .messages-area-edu,
+  .messages-area-legal {
+    height: 250px; /* Slightly reduce height */
+  }
+
+  .messages-area-edu { /* Edu chatbot specific if needed */
+    height: 300px;
+  }
+  .messages-area-legal { /* Legal chatbot specific */
+    height: 280px;
+  }
+
+  .input-area input,
+  .input-area-edu input,
+  .input-area-legal input {
+    font-size: 0.95rem; /* Adjust input font size */
+  }
+
+  .input-area button,
+  .input-area-edu button,
+  .input-area-legal button {
+    padding: 8px 15px; /* Adjust button padding */
+    font-size: 0.95rem; /* Adjust button font size */
+  }
+
+  .code-display-area {
+    padding: 10px;
+  }
+  .code-display-area pre {
+    max-height: 300px; /* Adjust max height for code */
+    /* overflow-x: auto; Ensure horizontal scroll for code - already on .code-display-area pre */
+  }
+  /* .code-display-area code styling is mostly removed, relying on theme */
+  .copy-code-button {
+    padding: 5px 10px;
+    font-size: 0.85rem;
+  }
+
+  .legal-disclaimer-ui {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+}
+
+
+/* Small screens (mobile phones) */
+@media (max-width: 480px) {
+  .App-header {
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+  .App-logo {
+    height: 30vmin; /* Smaller logo */
+  }
+
+  .app-navigation {
+    flex-direction: column; /* Stack navigation buttons */
+    align-items: stretch; /* Make buttons full width */
+  }
+  .app-navigation button {
+    width: calc(100% - 20px); /* Full width with some margin */
+    margin: 5px 10px; /* Adjust margin for stacked buttons */
+    font-size: 0.9rem;
+  }
+
+  .chat-container,
+  .educational-chatbot-container,
+  .legal-chatbot-container {
+    padding: 10px;
+    margin: 10px; /* Reduce margin further */
+    width: auto; /* Ensure it doesn't exceed screen width */
+  }
+
+  .educational-chatbot-container h2,
+  .legal-chatbot-container h2,
+  .chat-container h3 {
+    font-size: 1.4rem; /* Further adjust heading sizes */
+  }
+
+  .message {
+    max-width: 85%; /* Allow messages to be a bit wider */
+    padding: 0.5em 0.8em; /* Adjusted padding for smaller screens */
+    font-size: 0.9rem; /* Base font size for messages on small screens */
+    /* line-height will be inherited or can be adjusted if needed */
+  }
+
+  .message-display-area,
+  .messages-area-edu,
+  .messages-area-legal {
+    height: 200px; /* Further reduce height */
+  }
+  .messages-area-edu {
+     height: 250px;
+  }
+  .messages-area-legal {
+      height: 220px;
+  }
+
+
+  .input-area,
+  .input-area-edu,
+  .input-area-legal {
+    flex-direction: column; /* Stack input and button(s) */
+  }
+
+  .input-area input,
+  .input-area-edu input,
+  .input-area-legal input {
+    width: 100%;
+    margin-right: 0; /* Remove right margin as it's stacked */
+    margin-bottom: 8px; /* Add bottom margin */
+    font-size: 0.9rem;
+  }
+
+  .input-area button,
+  .input-area-edu button,
+  .input-area-legal button {
+    width: 100%; /* Make buttons full width */
+    padding: 10px; /* Adjust padding for full width */
+    font-size: 0.9rem;
+  }
+  .input-area .generate-code-button { /* Specific to model assistant */
+     margin-left: 0; /* Remove left margin when stacked */
+     margin-top: 8px; /* Add top margin when stacked */
+  }
+
+
+  .code-display-area {
+    padding: 8px;
+    margin-top: 15px;
+  }
+  .code-display-area pre {
+    max-height: 250px;
+  }
+  /* .code-display-area code styling is mostly removed, relying on theme */
+  .copy-code-button {
+    top: 5px;
+    right: 5px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+
+  .legal-disclaimer-ui {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
 }
 
 /* Legal Chatbot Styles */

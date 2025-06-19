@@ -2,6 +2,8 @@ import { useState } from 'react';
 import './App.css';
 import EducationalChatbot from './EducationalChatbot';
 import LegalChatbot from './LegalChatbot'; // Import LegalChatbot
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 function App() {
   // State for AI Model Assistant
@@ -167,11 +169,15 @@ function App() {
           {generatedCode && (
             <div className="code-display-area">
               <h4>Generated Code:</h4>
-              <pre>
-                <code className={`language-${codeLanguage}`}>
-                  {generatedCode}
-                </code>
-              </pre>
+              <SyntaxHighlighter
+                language={codeLanguage || 'plaintext'}
+                style={oneDark}
+                showLineNumbers
+                // wrapLines={false} // Default or explicit false for horizontal scroll
+                // lineProps={{style: {wordBreak: 'break-all', whiteSpace: 'pre-wrap'}}} // Not needed if not wrapping lines
+              >
+                {generatedCode}
+              </SyntaxHighlighter>
               <button onClick={handleCopyCode} className="copy-code-button">
                 {copyButtonText}
               </button>
