@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './App.css';
-import EducationalChatbot from './EducationalChatbot'; // Import EducationalChatbot
+import EducationalChatbot from './EducationalChatbot';
+import LegalChatbot from './LegalChatbot'; // Import LegalChatbot
 
 function App() {
   // State for AI Model Assistant
@@ -112,6 +113,12 @@ function App() {
           >
             Educational Chatbot
           </button>
+          <button
+            onClick={() => setActiveFeature('legalChat')}
+            className={activeFeature === 'legalChat' ? 'active' : ''}
+          >
+            Legal Chat
+          </button>
         </div>
         {/* <p>
           GitHub Codespaces <span className="heart">♥️</span> React
@@ -175,6 +182,10 @@ function App() {
 
       {activeFeature === 'eduChatbot' && (
         <EducationalChatbot />
+      )}
+
+      {activeFeature === 'legalChat' && (
+        <LegalChatbot />
       )}
     </div>
   );

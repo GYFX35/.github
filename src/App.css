@@ -280,3 +280,78 @@
 .copy-code-button:hover {
   background-color: #52b8d8;
 }
+
+/* Legal Chatbot Styles */
+.legal-chatbot-container {
+  background-color: #404040; /* Darker grey, distinct from others */
+  width: 90%;
+  max-width: 750px; /* Slightly wider if needed */
+  margin: 30px auto;
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: #f0f0f0; /* Generally light text on dark background */
+}
+
+.legal-chatbot-container h2 {
+  color: #ffc107; /* Amber/yellow for legal theme */
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.legal-disclaimer-ui {
+  background-color: #fff3cd; /* Light yellow, Bootstrap's warning color */
+  color: #856404; /* Dark yellow/brown text for contrast */
+  border: 1px solid #ffeeba;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+  text-align: justify;
+  font-size: 0.9rem;
+  font-weight: bold; /* Make disclaimer text bold */
+}
+
+.legal-disclaimer-ui p {
+  margin: 0;
+}
+
+.messages-area-legal {
+  height: 320px; /* Adjust as needed */
+  border-bottom: 1px solid #5a5a5a;
+  /* Inherits .message-display-area flex properties */
+}
+
+/* Using generic .message styles, but can override if needed */
+.legal-chatbot-container .message.assistant {
+  background-color: #5a5a5a; /* Slightly lighter grey for assistant */
+  color: #f0f0f0;
+}
+.legal-chatbot-container .message.user {
+  background-color: #ffc107; /* Amber for user messages */
+  color: #333; /* Darker text on amber */
+}
+
+.input-area-legal {
+  margin-top: 20px;
+  /* Inherits .input-area flex properties */
+}
+
+.input-area-legal input {
+  background-color: #505050; /* Medium grey input */
+  border: 1px solid #6a6a6a;
+  color: #f0f0f0;
+}
+
+.input-area-legal input::placeholder {
+  color: #bbb;
+}
+
+.input-area-legal button {
+  background-color: #ffc107; /* Amber button */
+  color: #333;
+  font-weight: bold;
+}
+
+.input-area-legal button:hover {
+  background-color: #e0a800; /* Darker amber on hover */
+}

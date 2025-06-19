@@ -118,6 +118,81 @@ async def gemini_chat_endpoint(request: QueryRequest):
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred with the AI assistant: {type(e).__name__}")
 
 
+@app.post("/api/legal_chat", response_model=QueryResponse)
+async def legal_chat_endpoint(request: QueryRequest):
+    """
+    Receives a user query related to legal topics, provides a general educational response
+    using Gemini, and includes a disclaimer.
+    """
+    if not GEMINI_API_KEY:
+        raise HTTPException(status_code=503, detail="GEMINI_API_KEY not configured for the legal chat endpoint.")
+
+    user_query = request.query
+
+    system_prompt_parts = [
+        "You are an AI assistant providing general information about legal topics for educational purposes ONLY.",
+        "Your information is not legal advice and should not be treated as such.",
+        "Acknowledge that laws vary significantly by jurisdiction and that the user should always consult a qualified lawyer in their jurisdiction for specific legal issues or advice.",
+        "Given the user's query, provide a general, educational response.",
+        "IMPORTANT: Conclude your entire response with the following exact disclaimer, on a new line:",
+        "---",
+        "Disclaimer: This information is for educational purposes only and is not legal advice. Laws vary by jurisdiction. Always consult a qualified lawyer for advice on specific legal issues."
+    ]
+    full_prompt_for_gemini = "\n".join(system_prompt_parts) + "\n\nUser Query: " + user_query
+
+    print(f"--- Sending Legal Chat Prompt to Gemini --- \n{full_prompt_for_gemini}\n-------------------------")
+
+    assistant_response_text = ""
+    try:
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(full_prompt_for_gemini)
+
+        try:
+            assistant_response_text = response.text
+        except ValueError: # Blocked prompt
+            if response.prompt_feedback and response.prompt_feedback.block_reason:
+                assistant_response_text = f"Response blocked due to: {response.prompt_feedback.block_reason.name}. Please try a different query."
+            else:
+                assistant_response_text = "Response could not be generated due to safety filters or other reasons."
+
+        if not assistant_response_text and response.parts:
+            try:
+                assistant_response_text = "".join(part.text for part in response.parts)
+            except AttributeError:
+                 assistant_response_text = "Received a non-text response part (legal chat). Please check backend logs."
+
+        if not assistant_response_text and response.prompt_feedback and response.prompt_feedback.block_reason:
+            assistant_response_text = f"Response blocked due to: {response.prompt_feedback.block_reason.name}. Please try a different query."
+
+        if not assistant_response_text:
+            assistant_response_text = "The AI assistant did not provide a text response for the legal query. Please try rephrasing or check logs."
+
+        # Ensure the disclaimer is present, even if the main response is short or was partially blocked
+        # However, the prompt asks Gemini to include it. If Gemini fails to do so, this is a fallback.
+        # For now, we trust Gemini to follow the prompt for the disclaimer.
+
+        return QueryResponse(answer=assistant_response_text)
+
+    except generation_types.BlockedPromptException as e:
+        print(f"Gemini API BlockedPromptException (Legal Chat): {e}")
+        raise HTTPException(status_code=400, detail=f"Your legal query was blocked by content filters: {e}")
+    except generation_types.StopCandidateException as e:
+        print(f"Gemini API StopCandidateException (Legal Chat): {e}")
+        assistant_response_text = f"Legal information generation stopped. This might be due to safety filters or reaching a stop condition. ({e})"
+        # Check if the disclaimer needs to be manually appended if not already included by the partial response
+        disclaimer = "\n---\nDisclaimer: This information is for educational purposes only and is not legal advice. Laws vary by jurisdiction. Always consult a qualified lawyer for advice on specific legal issues."
+        if disclaimer not in assistant_response_text:
+            assistant_response_text += disclaimer
+        return QueryResponse(answer=assistant_response_text)
+    except Exception as e:
+        print(f"Unexpected error during Gemini API call (Legal Chat): {type(e).__name__} - {e}")
+        # Append disclaimer to general error messages too, as the context is legal.
+        error_message = f"An unexpected error occurred with the legal AI assistant: {type(e).__name__}"
+        disclaimer = "\n---\nDisclaimer: This information is for educational purposes only and is not legal advice. Laws vary by jurisdiction. Always consult a qualified lawyer for advice on specific legal issues."
+        full_error_response = error_message + disclaimer
+        raise HTTPException(status_code=500, detail=full_error_response)
+
+
 @app.post("/api/generate_code", response_model=CodeGenerationResponse)
 async def generate_code_endpoint(request: CodeGenerationRequest):
     """
