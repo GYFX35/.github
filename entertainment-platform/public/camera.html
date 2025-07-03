@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Access - Entertainment Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        #camera-feed {
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #ccc;
+            margin-top: 15px;
+        }
+        .button-container {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav id="main-nav">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="videos.html">Videos</a></li>
+                <li><a href="music.html">Music</a></li>
+                <li><a href="games.html">Games</a></li>
+                <li><a href="news.html">News</a></li>
+                <li><a href="community.html">Community</a></li>
+                <li><a href="camera.html">Camera Demo</a></li>
+                <li><a href="notifications.html">Notifications Demo</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div id="root">
+            <h1>Camera Access Demo</h1>
+            <div class="button-container">
+                <button id="start-camera-btn">Start Camera</button>
+            </div>
+            <video id="camera-feed" autoplay playsinline></video>
+            <p id="camera-status"></p>
+        </div>
+    </main>
+    <footer>
+        <nav id="footer-nav">
+            <ul>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </footer>
+    <script>
+        const startCameraButton = document.getElementById('start-camera-btn');
+        const cameraFeed = document.getElementById('camera-feed');
+        const cameraStatus = document.getElementById('camera-status');
+
+        startCameraButton.addEventListener('click', async () => {
+            cameraStatus.textContent = '';
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                cameraStatus.textContent = 'getUserMedia is not supported in this browser.';
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                cameraFeed.srcObject = stream;
+                cameraStatus.textContent = 'Camera access granted. Streaming...';
+                startCameraButton.disabled = true;
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                    cameraStatus.textContent = 'Camera access was denied. Please allow camera permission in your browser settings.';
+                } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                    cameraStatus.textContent = 'No camera found on this device.';
+                } else {
+                    cameraStatus.textContent = `Error accessing camera: ${error.message}`;
+                }
+            }
+        });
+    </script>
+    <script src="/src/index.js"></script>
+</body>
+</html>

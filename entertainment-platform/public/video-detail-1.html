@@ -17,6 +17,8 @@
                 <li><a href="games.html">Games</a></li>
                 <li><a href="news.html">News</a></li>
                 <li><a href="community.html">Community</a></li>
+                <li><a href="camera.html">Camera Demo</a></li>
+                <li><a href="notifications.html">Notifications Demo</a></li>
             </ul>
         </nav>
     </header>
@@ -24,6 +26,10 @@
         <div id="root">
             <h1>Video Title 1</h1>
             <p>This is a placeholder for the video content and details.</p>
+            <div class="button-container" style="margin-top: 15px;">
+                <button id="share-video-btn">Share this Video</button>
+            </div>
+            <p id="share-status" style="margin-top: 10px;"></p>
             <p><a href="videos.html">Back to Videos</a></p>
         </div>
     </main>
@@ -35,6 +41,33 @@
             </ul>
         </nav>
     </footer>
+    <script>
+        const shareButton = document.getElementById('share-video-btn');
+        const shareStatus = document.getElementById('share-status');
+
+        if (shareButton) {
+            if (navigator.share) {
+                shareButton.addEventListener('click', async () => {
+                    try {
+                        await navigator.share({
+                            title: document.title,
+                            text: 'Check out this video on the Entertainment Platform!',
+                            url: window.location.href
+                        });
+                        shareStatus.textContent = 'Shared successfully!';
+                        console.log('Content shared successfully');
+                    } catch (error) {
+                        shareStatus.textContent = `Error sharing: ${error.message}`;
+                        console.error('Error sharing:', error);
+                    }
+                });
+            } else {
+                shareButton.disabled = true;
+                shareStatus.textContent = 'Web Share API not supported in this browser.';
+                console.warn('Web Share API not supported.');
+            }
+        }
+    </script>
     <script src="/src/index.js"></script>
 </body>
 </html>

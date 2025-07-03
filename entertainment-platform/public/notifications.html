@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Notifications - Entertainment Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        .button-container {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav id="main-nav">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="videos.html">Videos</a></li>
+                <li><a href="music.html">Music</a></li>
+                <li><a href="games.html">Games</a></li>
+                <li><a href="news.html">News</a></li>
+                <li><a href="community.html">Community</a></li>
+                <li><a href="camera.html">Camera Demo</a></li>
+                <li><a href="notifications.html">Notifications Demo</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div id="root">
+            <h1>Push Notification Demo</h1>
+            <div class="button-container">
+                <button id="request-permission-btn">Request Notification Permission</button>
+            </div>
+            <div class="button-container">
+                <button id="show-notification-btn" disabled>Show Test Notification</button>
+            </div>
+            <p id="permission-status"></p>
+            <p id="notification-info"></p>
+        </div>
+    </main>
+    <footer>
+        <nav id="footer-nav">
+            <ul>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </footer>
+    <script>
+        const requestPermissionButton = document.getElementById('request-permission-btn');
+        const showNotificationButton = document.getElementById('show-notification-btn');
+        const permissionStatusDisplay = document.getElementById('permission-status');
+        const notificationInfoDisplay = document.getElementById('notification-info');
+
+        function updateNotificationButtonState() {
+            if (Notification.permission === 'granted') {
+                showNotificationButton.disabled = false;
+                permissionStatusDisplay.textContent = 'Notification permission granted.';
+            } else {
+                showNotificationButton.disabled = true;
+                permissionStatusDisplay.textContent = `Notification permission: ${Notification.permission}.`;
+            }
+        }
+
+        requestPermissionButton.addEventListener('click', async () => {
+            if (!('Notification' in window)) {
+                permissionStatusDisplay.textContent = 'This browser does not support desktop notification.';
+                return;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                permissionStatusDisplay.textContent = `Notification permission: ${permission}.`;
+                if (permission === 'granted') {
+                    showNotificationButton.disabled = false;
+                    // It's good practice to also ensure the service worker is ready.
+                    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                         console.log('Service worker active and ready for push.');
+                    } else {
+                        console.warn('Service worker not active. Push messages might not be received until it is.');
+                        notificationInfoDisplay.textContent = 'Service worker not active yet. Please reload or wait.';
+                    }
+                } else {
+                    showNotificationButton.disabled = true;
+                }
+            } catch (error) {
+                console.error('Error requesting notification permission:', error);
+                permissionStatusDisplay.textContent = 'Error requesting notification permission.';
+            }
+        });
+
+        showNotificationButton.addEventListener('click', () => {
+            if (Notification.permission === 'granted' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'SHOW_TEST_NOTIFICATION',
+                    title: 'Test Notification!',
+                    body: 'This is a test push notification from the client.'
+                });
+                notificationInfoDisplay.textContent = 'Test notification request sent to service worker.';
+            } else if (Notification.permission !== 'granted') {
+                notificationInfoDisplay.textContent = 'Notification permission not granted.';
+            } else {
+                notificationInfoDisplay.textContent = 'Service worker not ready to show notification.';
+            }
+        });
+
+        // Initial state
+        if ('Notification' in window) {
+            updateNotificationButtonState();
+        } else {
+            permissionStatusDisplay.textContent = 'This browser does not support desktop notification.';
+            requestPermissionButton.disabled = true;
+            showNotificationButton.disabled = true;
+        }
+    </script>
+    <script src="/src/index.js"></script>
+</body>
+</html>
