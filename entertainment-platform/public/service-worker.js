@@ -2,6 +2,9 @@ const CACHE_NAME = 'entertainment-platform-cache-v1';
 const urlsToCache = [
     '/',
     '/index.html',
+    '/videos.html',
+    '/music.html',
+    '/games.html',
     '/style.css',
     '/manifest.json',
     '/src/index.js',
