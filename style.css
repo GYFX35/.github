@@ -220,4 +220,91 @@ progress[value]::-moz-progress-bar {
     content: "Interstitial Ad Placeholder";
 }
 */
+
+/* Affiliate Section Styles */
+.affiliate-section {
+    background-color: #f9f9f9;
+    padding: 20px;
+    margin-top: 30px;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+    text-align: center; /* Center the heading */
+}
+
+.affiliate-section h3 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.affiliate-items-container {
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+    justify-content: space-around; /* Distribute items nicely */
+    gap: 20px; /* Space between items */
+}
+
+.affiliate-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    width: 200px; /* Fixed width for each item, or use flex-basis */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    text-align: center; /* Center content within each item */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Pushes button to bottom */
+}
+
+.affiliate-item-image {
+    width: 120px; /* Placeholder size */
+    height: 120px; /* Placeholder size */
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 10px auto; /* Center image placeholder */
+    font-size: 0.8em;
+    color: #6c757d;
+}
+.affiliate-item-image span {
+    display: block;
+}
+
+
+.affiliate-item h4 {
+    font-size: 1.1em;
+    color: #2980b9; /* Match other link/header colors */
+    margin: 10px 0 5px 0;
+}
+
+.affiliate-item p {
+    font-size: 0.85em;
+    color: #555;
+    margin-bottom: 15px;
+    flex-grow: 1; /* Allows description to take up space */
+}
+
+.affiliate-link {
+    display: inline-block;
+    background-color: #5cb85c; /* Green for call to action */
+    color: white;
+    padding: 8px 12px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+}
+
+.affiliate-link:hover {
+    background-color: #4cae4c;
+}
+
+.affiliate-disclaimer {
+    font-size: 0.75em;
+    color: #777;
+    margin-top: 20px;
+    text-align: center;
+}
 ```

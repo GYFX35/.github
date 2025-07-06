@@ -393,5 +393,38 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('Service workers are not supported in this browser.');
         updateEventLog('Service Workers not supported by this browser.');
     }
+
+    // --- Affiliate Link Click Handling (Placeholder) ---
+    const affiliateLinks = document.querySelectorAll('.affiliate-link');
+    affiliateLinks.forEach(link => {
+        link.addEventListener('click', (event) => {
+            // event.preventDefault(); // Keep default behavior to open link for actual affiliate links
+            const itemName = event.target.dataset.itemName || 'Unknown Item';
+            const itemUrl = event.target.href; // This will be '#' for placeholders
+
+            const logMessage = `Affiliate link clicked for: ${itemName}. URL: ${itemUrl}`;
+            console.log(logMessage);
+            updateEventLog(logMessage);
+
+            // In a real integration, you might also send this click event to your analytics
+            // For example (conceptual):
+            // if (typeof gtag === 'function') {
+            //     gtag('event', 'click', {
+            //         'event_category': 'Affiliate Link',
+            //         'event_label': itemName,
+            //         'value': itemUrl // or some other value if tracking revenue
+            //     });
+            // }
+
+            // IMPORTANT: For actual affiliate links, you would NOT preventDefault.
+            // You would let the link navigate. The href should be the actual affiliate URL.
+            // The preventDefault is only useful if you were handling the navigation yourself
+            // or if the link was purely for tracking before a JS redirect.
+            // For our placeholders with href="#", preventDefault isn't strictly needed but doesn't hurt.
+            if (itemUrl === window.location.href + "#") { // Only prevent if it's a placeholder link
+                 event.preventDefault();
+            }
+        });
+    });
 });
 ```
