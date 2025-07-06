@@ -307,4 +307,42 @@ progress[value]::-moz-progress-bar {
     margin-top: 20px;
     text-align: center;
 }
+
+/* Premium Purchase Section (Google Pay) Styles */
+.premium-purchase-section {
+    background-color: #fdfdfd; /* Slightly different background */
+    padding: 20px;
+    margin-top: 30px;
+    border-radius: 5px;
+    border: 1px solid #ccc; /* More prominent border */
+    text-align: center;
+}
+
+.premium-purchase-section h3 {
+    color: #d35400; /* A distinct color for emphasis */
+    margin-bottom: 10px;
+}
+
+.premium-purchase-section p {
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    color: #333;
+}
+
+#google-pay-button-container {
+    min-height: 40px; /* Google Pay button standard height */
+    display: flex; /* Helps in centering the button if it doesn't take full width */
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    /* The Google Pay button itself is styled by Google's JS,
+       but this container can help position it. */
+}
+
+.payment-note {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 15px;
+}
 ```

@@ -426,5 +426,159 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // --- Google Pay Placeholder Logic ---
+    const GOOGLE_PAY_API_VERSION = { apiVersion: 2, apiVersionMinor: 0 };
+    const GOOGLE_MERCHANT_ID = 'YOUR_GOOGLE_MERCHANT_ID_HERE'; // Placeholder
+    const PAYMENT_GATEWAY_NAME = 'example'; // e.g., 'stripe'
+    const PAYMENT_GATEWAY_MERCHANT_ID = 'YOUR_PAYMENT_GATEWAY_MERCHANT_ID_HERE'; // e.g., Stripe Publishable Key
+
+    // Base Google Pay request configuration
+    const BASE_PAYMENT_REQUEST_CONFIG = {
+        apiVersion: GOOGLE_PAY_API_VERSION.apiVersion,
+        apiVersionMinor: GOOGLE_PAY_API_VERSION.apiVersionMinor,
+        allowedPaymentMethods: [
+            {
+                type: 'CARD',
+                parameters: {
+                    allowedAuthMethods: ["PAN_ONLY", "CRYPTOGRAM_3DS"],
+                    allowedCardNetworks: ["AMEX", "DISCOVER", "JCB", "MASTERCARD", "VISA"]
+                },
+                tokenizationSpecification: {
+                    type: 'PAYMENT_GATEWAY',
+                    parameters: {
+                        'gateway': PAYMENT_GATEWAY_NAME,
+                        'gatewayMerchantId': PAYMENT_GATEWAY_MERCHANT_ID
+                        // For Stripe, it would be:
+                        // 'stripe:version': '2020-08-27', // Use a recent Stripe API version
+                        // 'stripe:publishableKey': 'pk_test_YOUR_STRIPE_PUBLISHABLE_KEY'
+                    }
+                }
+            }
+        ]
+    };
+
+    let paymentsClient = null;
+    const googlePayButtonContainer = document.getElementById('google-pay-button-container');
+
+    // This function is called by the Google Pay script's `onload` attribute in index.html
+    window.onGooglePayLoaded = function() {
+        console.log("Google Pay API script loaded.");
+        updateEventLog("Google Pay API ready.");
+        if (!googlePayButtonContainer) {
+            console.error("Google Pay button container not found.");
+            return;
+        }
+
+        try {
+            paymentsClient = new google.payments.api.PaymentsClient({
+                environment: 'TEST' // Use 'PRODUCTION' with real merchant ID
+                // merchantInfo: { // Optional, but good for production
+                //    merchantId: GOOGLE_MERCHANT_ID,
+                //    merchantName: "AR Boxing Game"
+                // }
+            });
+
+            const isReadyToPayRequest = Object.assign(
+                {},
+                BASE_PAYMENT_REQUEST_CONFIG
+                // You can add specific checks here, e.g., if merchantId is required for isReadyToPay
+            );
+
+            paymentsClient.isReadyToPay(isReadyToPayRequest)
+                .then(function(response) {
+                    if (response.result) {
+                        const button = paymentsClient.createButton({
+                            onClick: onGooglePayButtonClicked,
+                            // Other button options: type, color, sizeMode
+                            // See: https://developers.google.com/pay/api/web/reference/object#ButtonOptions
+                            buttonType: 'buy', // 'buy', 'donate', 'plain', 'subscribe', etc.
+                            buttonSizeMode: 'fill', // 'static' or 'fill'
+                        });
+                        googlePayButtonContainer.innerHTML = ''; // Clear any existing content
+                        googlePayButtonContainer.appendChild(button);
+                        updateEventLog("Google Pay button added.");
+                    } else {
+                        console.warn("Google Pay is not available or user is not ready to pay.", response);
+                        updateEventLog("Google Pay not available on this device/browser.");
+                        googlePayButtonContainer.innerHTML = '<p>Google Pay not available.</p>';
+                    }
+                })
+                .catch(function(err) {
+                    console.error("Error checking Google Pay readiness: ", err);
+                    updateEventLog(`Error checking GPay readiness: ${err.statusCode || err.message}`);
+                });
+        } catch (err) {
+            console.error("Error initializing Google Pay client: ", err);
+            updateEventLog(`Error initializing GPay: ${err.message}`);
+        }
+    };
+
+    function getTransactionInfo(itemName = "Premium Unlock", price = "1.99") {
+        return {
+            // See: https://developers.google.com/pay/api/web/reference/object#TransactionInfo
+            countryCode: 'US', // Important: affects availability of payment methods
+            currencyCode: 'USD',
+            totalPriceStatus: 'FINAL',
+            totalPrice: price,
+            totalPriceLabel: `Total for ${itemName}`,
+            displayItems: [ // Optional: for line item breakdown
+                {
+                    label: itemName,
+                    type: 'LINE_ITEM',
+                    price: price,
+                }
+            ]
+            // checkoutOption: 'COMPLETE_IMMEDIATE_PURCHASE' // If no further interaction needed after GPay
+        };
+    }
+
+    function onGooglePayButtonClicked() {
+        if (!paymentsClient) {
+            console.error("Google Pay client not initialized.");
+            updateEventLog("Google Pay client not ready.");
+            return;
+        }
+
+        const paymentDataRequest = Object.assign({}, BASE_PAYMENT_REQUEST_CONFIG);
+        paymentDataRequest.merchantInfo = {
+            merchantId: GOOGLE_MERCHANT_ID, // Required for loadPaymentData
+            merchantName: "AR Boxing Game (Test)"
+        };
+        paymentDataRequest.transactionInfo = getTransactionInfo("Premium Game Access", "0.01"); // Use a nominal amount for testing
+
+        console.log("Requesting payment data...", paymentDataRequest);
+        updateEventLog("Google Pay transaction initiated...");
+
+        paymentsClient.loadPaymentData(paymentDataRequest)
+            .then(function(paymentData) {
+                console.log("Google Pay paymentData response: ", paymentData);
+
+                // This is where you would send paymentData.paymentMethodData.tokenizationData.token
+                // to your backend server for processing with your payment gateway (e.g., Stripe).
+                const paymentToken = paymentData.paymentMethodData.tokenizationData.token;
+                const logMsg = `Mock Payment Success! Token (conceptual): ${paymentToken ? paymentToken.substring(0,30)+'...' : 'N/A'}`;
+                console.log(logMsg);
+                updateEventLog(logMsg);
+                alert("Mock Payment Successful! Premium features (conceptual) unlocked.");
+
+                // Example of sending to backend (conceptual, needs actual endpoint and error handling)
+                // fetchAPI('/game/process-gpay-payment', 'POST', { paymentToken: paymentToken, gameId: currentGameId, item: "premium_access" })
+                // .then(backendResponse => {
+                //     if (backendResponse && backendResponse.success) {
+                //         updateEventLog("Payment processed by backend (mock). Premium unlocked!");
+                //         // Update UI to reflect premium status
+                //     } else {
+                //          updateEventLog("Backend payment processing failed (mock).");
+                //     }
+                // });
+
+            })
+            .catch(function(err) {
+                console.error("Error loading payment data: ", err);
+                updateEventLog(`Google Pay Error: ${err.statusCode || err.message || 'Transaction cancelled/failed'}`);
+            });
+    }
+
 });
 ```

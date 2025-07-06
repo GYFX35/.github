@@ -7,6 +7,7 @@
     <title>AR Boxing Game</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
+    <script src="https://pay.google.com/gp/p/js/pay.js" async onload="onGooglePayLoaded()"></script>
     <!-- Optional: Apple-specific meta tags for PWA-like behavior -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -108,6 +109,16 @@
                 <small>(As an affiliate, we may earn from qualifying purchases. Prices are illustrative.)</small>
             </p>
         </div>
+
+        <div class="premium-purchase-section">
+            <h3>Unlock Premium Features!</h3>
+            <p>Get access to exclusive content and remove ads (conceptual).</p>
+            <div id="google-pay-button-container">
+                <!-- Google Pay button will be rendered here by JavaScript -->
+            </div>
+            <p class="payment-note"><small>Secure payments via Google Pay. This is a placeholder setup.</small></p>
+        </div>
+
 
     <script src="script.js"></script>
 </body>
