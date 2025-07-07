@@ -1,0 +1,33 @@
+{
+  "services": [
+    {
+      "name": "Local Library Services",
+      "faqs": [
+        {
+          "question": "What are the library's operating hours?",
+          "answer": "The Example Local Library is open Monday to Friday from 9 AM to 7 PM, and Saturday from 10 AM to 4 PM. It is closed on Sundays and public holidays. Please check our website for holiday-specific hours.",
+          "keywords": ["hours", "open", "operating times", "schedule", "when does the library close", "when does the library open", "closing time", "opening time"]
+        },
+        {
+          "question": "How do I get a library card?",
+          "answer": "To get a library card, please visit any branch of the Example Local Library with a valid photo ID and proof of your current address. Application forms are available at the service desk. For residents under 18, a parent or guardian must co-sign.",
+          "keywords": ["library card", "card", "join", "register", "membership", "sign up", "application"]
+        },
+        {
+          "question": "Can I reserve books online?",
+          "answer": "Yes, you can reserve books online through the Example Local Library catalog on our website. You will need your library card number and PIN to log in and place a hold. Visit examplelocallibrary.gov/catalog.",
+          "keywords": ["reserve books", "online catalog", "hold", "request books", "book reservation", "place a hold"]
+        },
+        {
+          "question": "Does the library have public computers?",
+          "answer": "Yes, the Example Local Library provides public computers with internet access and common productivity software at all its branches. A library card is required for login, and usage may be limited to a certain time per day, especially during peak hours.",
+          "keywords": ["public computers", "computers", "internet access", "pc", "desktop", "computer use", "wifi"]
+        }
+      ],
+      "general_info": {
+        "website": "http://examplelocallibrary.gov",
+        "contact_phone": "(555) 555-0101"
+      }
+    }
+  ]
+}
