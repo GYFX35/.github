@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ethers, Contract } from 'ethers';
 import './index.css'; // Ensure global styles are loaded
 import { Pattern, PatternAI, patternsLibrary, premiumAIPatternsLibrary } from './patterns';
+import useRewardedVideoAd from './useRewardedVideoAd'; // Import the hook
 import { contractAddress as nftRewardContractAddress, contractABI as nftRewardContractABI, SEPOLIA_CHAIN_ID } from './contractInfo';
 import { premiumAssetsContractAddress, premiumAssetsContractABI } from './premiumAssetsContractInfo';
 import { PlayerArtworkContractAddress, PlayerArtworkContractABI } from './playerArtworkContractInfo'; // New
@@ -27,6 +28,19 @@ const ARPainterPage: React.FC<ARPainterPageProps> = () => {
   const [suggestedPattern, setSuggestedPattern] = useState<Pattern | null>(null);
   const [selectedPattern, setSelectedPattern] = useState<Pattern>(patternsLibrary[0]);
   const [availablePatterns, setAvailablePatterns] = useState<Pattern[]>(patternsLibrary);
+
+  // Rewarded Ad State
+  const {
+    isAdLoading: isRewardAdLoading,
+    isAdReady: isRewardAdReady,
+    rewardGranted,
+    adClosed: rewardAdClosed,
+    error: rewardAdError,
+    showAd: showRewardAd,
+    resetAdState: resetRewardAdState
+  } = useRewardedVideoAd();
+  const [adErrorMessage, setAdErrorMessage] = useState<string | null>(null);
+  const [sparkleFlowUnlocked, setSparkleFlowUnlocked] = useState(false);
 
   // Web3 States
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
@@ -67,6 +81,17 @@ const ARPainterPage: React.FC<ARPainterPageProps> = () => {
   const [lastMintedArtwork, setLastMintedArtwork] = useState<LastMintedArtworkInfo | null>(null);
 
 
+  // Define the special reward pattern
+  const sparkleFlowPattern: Pattern & { isReward?: boolean } = useMemo(() => ({
+    id: "reward-pattern-sparkle-flow",
+    name: "Sparkle Flow ✨",
+    style: "gradient", // Or any other style you prefer
+    color1: "cyan",
+    color2: "magenta",
+    description: "A shimmering pattern unlocked by watching an ad!",
+    isReward: true,
+  }), []);
+
   useEffect(() => {
     if (paintedObjectsCount >= paintingGoal) {
       setObjectiveMet(true);
@@ -75,10 +100,45 @@ const ARPainterPage: React.FC<ARPainterPageProps> = () => {
   }, [paintedObjectsCount, paintingGoal]);
 
   useEffect(() => {
+    // Update available patterns if sparkleFlowUnlocked changes
+    const basePatterns = [...patternsLibrary];
+    PREDEFINED_PREMIUM_ASSET_IDS.forEach(id => {
+      if (ownedPremiumAssetIds[id]) {
+        const premiumPatternInfo = premiumAssetsForSale.find(p => p.id === id) ||
+                                 (id === 1 ? { name: "Golden Stripes ✨", color1: "gold", style: "stripes", color2: "darkgoldenrod"} :
+                                  id === 2 ? { name: "Rainbow Brush 🌈", color1: "red", style: "gradient", color2: "purple" } :
+                                  null);
+        if (premiumPatternInfo && !basePatterns.find(p => p.id === `premium-${id}`)) {
+          basePatterns.push({
+            id: `premium-${id}`, name: premiumPatternInfo.name, style: (premiumPatternInfo as any).style || 'solid',
+            description: premiumPatternInfo.description || "A premium asset.", color1: (premiumPatternInfo as any).color1 || 'magenta',
+            color2: (premiumPatternInfo as any).color2, isPremium: true,
+          } as Pattern);
+        }
+      }
+    });
+
+    if (sparkleFlowUnlocked && !basePatterns.find(p => p.id === sparkleFlowPattern.id)) {
+      setAvailablePatterns([sparkleFlowPattern, ...basePatterns]);
+    } else if (!sparkleFlowUnlocked && basePatterns.find(p => p.id === sparkleFlowPattern.id)) {
+      setAvailablePatterns(basePatterns.filter(p => p.id !== sparkleFlowPattern.id));
+    } else if (availablePatterns.length !== basePatterns.length || !basePatterns.every((bp, i) => bp.id === availablePatterns[i]?.id) || (sparkleFlowUnlocked && !availablePatterns.find(p=>p.id === sparkleFlowPattern.id))) {
+      // General sync if sparkleFlowUnlocked hasn't changed but basePatterns might have (e.g. owned assets loaded)
+       if (sparkleFlowUnlocked) {
+        setAvailablePatterns([sparkleFlowPattern, ...basePatterns.filter(p => p.id !== sparkleFlowPattern.id)]);
+       } else {
+        setAvailablePatterns(basePatterns.filter(p => p.id !== sparkleFlowPattern.id));
+       }
+    }
+  }, [ownedPremiumAssetIds, premiumAssetsForSale, sparkleFlowUnlocked, availablePatterns, sparkleFlowPattern]);
+
+
+  useEffect(() => {
     setSuggestedPattern(patternAI.suggestPattern(selectedPattern, availablePatterns, hasPremiumAIAccess));
   }, [patternAI, selectedPattern, availablePatterns, hasPremiumAIAccess]);
 
-  const fetchOwnedPremiumAssets = async () => { /* ... same ... */
+
+  const fetchOwnedPremiumAssets = async () => {
     if (!premiumAssetsContract || !userAddress) return;
     setIsProcessing(true); setTxMessage("Checking premium assets...");
     try {
@@ -92,25 +152,12 @@ const ARPainterPage: React.FC<ARPainterPageProps> = () => {
 
   useEffect(() => { /* ... same ... */
     const updatedPatterns = [...patternsLibrary];
-    PREDEFINED_PREMIUM_ASSET_IDS.forEach(id => {
-      if (ownedPremiumAssetIds[id]) {
-        const premiumPatternInfo = premiumAssetsForSale.find(p => p.id === id) ||
-                                 (id === 1 ? { name: "Golden Stripes ✨", color1: "gold", style: "stripes", color2: "darkgoldenrod"} :
-                                  id === 2 ? { name: "Rainbow Brush 🌈", color1: "red", style: "gradient", color2: "purple" } :
-                                  null);
-        if (premiumPatternInfo && !updatedPatterns.find(p => p.id === `premium-${id}`)) {
-          updatedPatterns.push({
-            id: `premium-${id}`, name: premiumPatternInfo.name, style: (premiumPatternInfo as any).style || 'solid',
-            description: premiumPatternInfo.description || "A premium asset.", color1: (premiumPatternInfo as any).color1 || 'magenta',
-            color2: (premiumPatternInfo as any).color2, isPremium: true,
-          } as Pattern);
-        }
-      }
-    });
-    setAvailablePatterns(updatedPatterns);
+    // This useEffect was for updating availablePatterns based on owned assets.
+    // It's now merged with the sparkleFlowUnlocked logic a few effects above.
   }, [ownedPremiumAssetIds, premiumAssetsForSale]);
 
-  const fetchPremiumAssetsForStore = async () => { /* ... same ... */
+
+  const fetchPremiumAssetsForStore = async () => {
     if (!premiumAssetsContract) {
         setStoreLoadingError("Connect wallet to Sepolia to see premium assets.");
         setPremiumAssetsForSale([
@@ -278,6 +325,55 @@ const ARPainterPage: React.FC<ARPainterPageProps> = () => {
   const handleAcceptSuggestion = () => { if (suggestedPattern) setSelectedPattern(suggestedPattern); setSuggestedPattern(patternAI.suggestPattern(selectedPattern, availablePatterns, hasPremiumAIAccess)); };
   const handleNextSuggestion = () => { setSuggestedPattern(patternAI.suggestPattern(selectedPattern, availablePatterns, hasPremiumAIAccess)); };
 
+  // Rewarded Ad handlers
+  useEffect(() => {
+    if (rewardGranted) {
+      setSparkleFlowUnlocked(true);
+      setAdErrorMessage("Sparkle Flow pattern unlocked for this session!");
+      // Optionally reset the ad state if you want the user to be able to watch another ad
+      // resetRewardAdState();
+    }
+  }, [rewardGranted, sparkleFlowPattern]);
+
+  useEffect(() => {
+    if (rewardAdError) {
+      setAdErrorMessage(`Ad Error: ${rewardAdError}`);
+    }
+  }, [rewardAdError]);
+
+  useEffect(() => {
+    if (rewardAdClosed && !rewardGranted) {
+      setAdErrorMessage("Ad closed without reward. Click again to retry.");
+      // resetRewardAdState(); // Allow trying again immediately
+    }
+  }, [rewardAdClosed, rewardGranted, resetRewardAdState]);
+
+
+  const handleShowRewardAd = () => {
+    if (sparkleFlowUnlocked) {
+      setAdErrorMessage("Sparkle Flow is already unlocked for this session!");
+      return;
+    }
+    if (isRewardAdReady) {
+      setAdErrorMessage(null);
+      showRewardAd();
+    } else if (isRewardAdLoading) {
+      setAdErrorMessage("Ad is still loading, please wait...");
+    } else {
+      if (rewardAdClosed && !rewardGranted) {
+        resetRewardAdState();
+        setAdErrorMessage("Ad reset. Please click again to show.");
+      } else if (rewardAdError) {
+        setAdErrorMessage(`Ad not ready. Error: ${rewardAdError}. Try resetting or refresh.`);
+        resetRewardAdState(); // Attempt reset on error too
+      } else {
+        setAdErrorMessage("Ad not ready. Please wait or try again.");
+        resetRewardAdState();
+      }
+    }
+  };
+
+
   return (
     <div style={{ width: '100%', height: '100vh', position: 'relative', overflow:'hidden' }}>
       <a-scene ref={sceneRef} webxr="optionalFeatures: hit-test,dom-overlay,plane-detection; overlayElement: #ar-ui-overlay;" renderer="colorManagement: true; physicallyCorrectLights: true;" vr-mode-ui={`enabled: ${arSupported}; enterVRButton: #ar-enter-button;`} ar-hit-test="enabled: false;" ar-plane-manager style={{ width: '100%', height: '100%' }} debug={false}>
@@ -299,8 +395,30 @@ const ARPainterPage: React.FC<ARPainterPageProps> = () => {
                   <p style={{fontSize: '0.8em', marginBottom:'2px', fontStyle:'italic'}}>Suggests: <strong style={{color: suggestedPattern?.color1}}>{suggestedPattern?.name || 'None'} {(suggestedPattern as PremiumPattern)?.isPremium && '✨'} {premiumAIPatternsLibrary.find(p => p.id === suggestedPattern?.id) && <span title="AI Exclusive Suggestion">(AI Only)</span>}</strong></p>
                   {suggestedPattern && (<div style={{display: 'flex', alignItems: 'center', margin: '5px 0 10px 0'}}>Preview: <div style={{ width: '20px', height: '20px', backgroundColor: suggestedPattern.color1, border: '1px solid #ccc', marginLeft: '8px', borderRadius: suggestedPattern.style === 'stripes' ? '0' : '50%'}}></div>{suggestedPattern.color2 && <div style={{ width: '20px', height: '20px', backgroundColor: suggestedPattern.color2, border: '1px solid #ccc', marginLeft: '3px', borderRadius: suggestedPattern.style === 'stripes' ? '0' : '50%'}}></div>}</div>)}
                   <button onClick={handleAcceptSuggestion} disabled={!suggestedPattern} style={{fontSize: '0.85em', padding: '6px 12px', marginRight: '8px', cursor:'pointer', borderRadius:'5px'}}>Accept</button><button onClick={handleNextSuggestion} style={{fontSize: '0.85em', padding: '6px 12px', cursor:'pointer', borderRadius:'5px'}}>Next</button>
-                </div><hr style={{margin: '8px 0'}}/>
-                <p style={{fontSize: '0.9em', marginBottom: '8px'}}>Choose from your patterns:</p><div className="pattern-picker" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '5px' }}>{availablePatterns.map(p => (<button key={p.id} onClick={() => setSelectedPattern(p)} title={p.name} style={{ padding: '6px', border: selectedPattern.id === p.id ? '3px solid #007bff' : '1px solid #ccc', background: 'rgba(255,255,255,0.8)', cursor: 'pointer', minWidth: '55px', textAlign: 'center', borderRadius:'5px'}}><div style={{display: 'flex', justifyContent:'center', marginBottom:'3px'}}><div style={{width: '18px', height: '18px', backgroundColor: p.color1, marginRight: p.color2 ? '2px' : '0', borderRadius: p.style === 'stripes' ? '0' : '50%', border:'1px solid #eee' }}></div>{p.color2 && <div style={{width: '18px', height: '18px', backgroundColor: p.color2, borderRadius: p.style === 'stripes' ? '0' : '50%', border:'1px solid #eee'}}></div>}</div><span style={{fontSize: '0.7em', display:'block', color:'#333'}}>{p.name.substring(0,10)}{p.name.length > 10 ? '...' : ''} {(p as PremiumPattern).isPremium && '✨'}</span></button>))}</div>
+                </div>
+                <hr style={{margin: '8px 0'}}/>
+                {/* Rewarded Ad Section */}
+                {!sparkleFlowUnlocked && (
+                  <div style={{margin: '10px 0', padding: '10px', border: '1px solid #ddd', background: '#f0f0f0', borderRadius: '5px'}}>
+                    <p style={{fontSize: '0.9em', fontWeight:'bold', margin: '0 0 5px 0'}}>Get a Free Special Pattern!</p>
+                    <button
+                      onClick={handleShowRewardAd}
+                      disabled={isRewardAdLoading || sparkleFlowUnlocked}
+                      style={{fontSize: '0.85em', padding: '8px 12px', cursor: (isRewardAdLoading || sparkleFlowUnlocked) ? 'not-allowed' : 'pointer', borderRadius:'5px', background: sparkleFlowUnlocked ? '#ccc' : (isRewardAdReady ? '#28a745' : '#007bff'), color: 'white', border:'none'}}
+                    >
+                      {isRewardAdLoading ? 'Loading Ad...' : (sparkleFlowUnlocked ? 'Sparkle Unlocked!' : (isRewardAdReady ? 'Watch Ad for Sparkle Flow ✨' : 'Load Ad for Sparkle Flow ✨'))}
+                    </button>
+                    {adErrorMessage && <p style={{color: rewardGranted ? 'green': 'red', fontSize: '0.8em', marginTop: '8px', marginBottom: 0}}>{adErrorMessage}</p>}
+                  </div>
+                )}
+                {sparkleFlowUnlocked && (
+                   <div style={{margin: '10px 0', padding: '10px', border: '1px solid green', background: 'lightgreen', borderRadius: '5px'}}>
+                     <p style={{fontSize: '0.9em', fontWeight:'bold', margin: '0 0 5px 0'}}>✨ Sparkle Flow Pattern Unlocked! ✨</p>
+                     <p style={{fontSize: '0.8em', margin:0}}>It's now available in your pattern picker below.</p>
+                   </div>
+                )}
+                <hr style={{margin: '8px 0'}}/>
+                <p style={{fontSize: '0.9em', marginBottom: '8px'}}>Choose from your patterns:</p><div className="pattern-picker" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '5px' }}>{availablePatterns.map(p => (<button key={p.id} onClick={() => setSelectedPattern(p)} title={p.name} style={{ padding: '6px', border: selectedPattern.id === p.id ? '3px solid #007bff' : '1px solid #ccc', background: (p as any).isReward ? 'linear-gradient(45deg, cyan, magenta)' : 'rgba(255,255,255,0.8)', cursor: 'pointer', minWidth: '55px', textAlign: 'center', borderRadius:'5px'}}><div style={{display: 'flex', justifyContent:'center', marginBottom:'3px'}}><div style={{width: '18px', height: '18px', backgroundColor: p.color1, marginRight: p.color2 ? '2px' : '0', borderRadius: p.style === 'stripes' ? '0' : '50%', border:'1px solid #eee' }}></div>{p.color2 && <div style={{width: '18px', height: '18px', backgroundColor: p.color2, borderRadius: p.style === 'stripes' ? '0' : '50%', border:'1px solid #eee'}}></div>}</div><span style={{fontSize: '0.7em', display:'block', color: (p as any).isReward ? 'white' : '#333'}}>{p.name.substring(0,10)}{p.name.length > 10 ? '...' : ''} {(p as PremiumPattern).isPremium && '✨'} {(p as any).isReward && '🎁'}</span></button>))}</div>
                 <p style={{marginTop: '15px', fontSize: '0.8em', fontStyle:'italic', color: '#555'}}>Click on a detected AR surface to paint.</p>
             </div>
             {inAR && ( /* Show store toggle only in AR */
