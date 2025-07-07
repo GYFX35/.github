@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/icons/app-icon-192x192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#E91E63">
+    <title>GlamFilter PWA</title>
+    <!-- Link to manifest.json - it's in public folder and Vite handles the path correctly -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Google Publisher Tag (GPT) -->
+    <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+    <script>
+      window.googletag = window.googletag || {cmd: []};
+      // GPT API can be called before the library is loaded.
+      // Commands are queued and executed asynchronously.
+      // googletag.cmd.push(() => {
+      //   // Ad slots can be defined here, or more commonly within React components
+      //   // For rewarded ads, slots are typically defined just before they are needed.
+      //   // googletag.enableServices(); // Enable services after defining slots
+      // });
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
