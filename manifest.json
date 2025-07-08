@@ -1,7 +1,7 @@
 {
-  "name": "Global Connect - Share, Interact, Partner",
-  "short_name": "GlobalConnect",
-  "description": "A platform for global culture promotion, interaction, and partnership.",
+  "name": "FindMe - Connect, Discover, Share",
+  "short_name": "FindMe",
+  "description": "FindMe: A platform to connect with people, discover new things, and share your world.",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
