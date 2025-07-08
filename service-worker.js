@@ -17,7 +17,8 @@ const urlsToCache = [
   '/dashboard.html',
   '/games/placeholder_game1/index.html',
   '/games/placeholder_game2/index.html',
-  '/games/placeholder_game3/index.html'
+  '/games/placeholder_game3/index.html',
+  '/js/culture-submission.js'
 ];
 
 self.addEventListener('install', event => {

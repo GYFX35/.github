@@ -283,3 +283,96 @@ footer {
 .game-page-main p {
     margin-bottom: 10px;
 }
+
+/* Culture Submission Form Styles */
+#cultureSubmissionForm label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+#cultureSubmissionForm input[type="text"],
+#cultureSubmissionForm textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Ensures padding doesn't add to width */
+    font-family: Arial, sans-serif;
+    font-size: 1rem;
+}
+
+#cultureSubmissionForm input[type="file"] {
+    margin-bottom: 20px;
+}
+
+#cultureSubmissionForm button[type="submit"] {
+    /* Using existing .button styles if available, or define specific ones */
+    background-color: #28a745; /* Green */
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease;
+}
+
+#cultureSubmissionForm button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+/* Shared Stories Display Styles */
+#user-shared-culture h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.shared-story-item {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.shared-story-item h4 {
+    margin-top: 0;
+    color: #007bff; /* Blue title */
+    font-size: 1.5rem;
+}
+
+.shared-story-item p {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.shared-story-item p strong {
+    color: #555;
+}
+
+.shared-story-item img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-top: 10px;
+    border: 1px solid #eee;
+}
+.delete-story-button {
+    background-color: #dc3545; /* Red */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.delete-story-button:hover {
+    background-color: #c82333;
+}

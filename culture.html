@@ -48,9 +48,35 @@
             </div>
         </section>
         <section id="share-culture">
-            <h3>Share Your Culture</h3>
-            <p>We invite you to share aspects of your own culture with our global community. Submit articles, photos, or videos.</p>
-            <button>Contribute Now</button> <!-- This might be for text/article contributions -->
+            <h3>Share Your Culture Story</h3>
+            <p>We invite you to share aspects of your own culture with our global community. Fill out the form below to submit your story, including an image if you like!</p>
+            <form id="cultureSubmissionForm" style="margin-top: 15px; padding: 15px; border: 1px solid #eee; border-radius: 5px;">
+                <div>
+                    <label for="cultureTitle" style="display: block; margin-bottom: 5px;">Title:</label>
+                    <input type="text" id="cultureTitle" name="cultureTitle" required style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div>
+                    <label for="cultureDescription" style="display: block; margin-bottom: 5px;">Description:</label>
+                    <textarea id="cultureDescription" name="cultureDescription" rows="5" required style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+                </div>
+                <div>
+                    <label for="cultureOrigin" style="display: block; margin-bottom: 5px;">Country/Region of Origin:</label>
+                    <input type="text" id="cultureOrigin" name="cultureOrigin" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div>
+                    <label for="cultureImage" style="display: block; margin-bottom: 5px;">Image (optional):</label>
+                    <input type="file" id="cultureImage" name="cultureImage" accept="image/*" style="margin-bottom: 15px;">
+                </div>
+                <button type="submit" class="button">Submit Your Story</button>
+            </form>
+        </section>
+
+        <section id="user-shared-culture" style="margin-top:30px;">
+            <h3>Your Shared Stories</h3>
+            <div id="shared-stories-container">
+                <!-- Submitted stories will be displayed here by JavaScript -->
+                <p>No stories shared yet. Use the form above to share yours!</p>
+            </div>
         </section>
 
         <section id="share-cultural-moment">
@@ -70,6 +96,7 @@
     </footer>
     <script src="js/camera-culture.js"></script>
     <script src="js/sharing.js"></script>
+    <script src="js/culture-submission.js"></script>
     <!-- Using a separate JS for now to avoid ID conflicts if logic needs to diverge, or we can refactor camera.js to be more generic -->
 </body>
 </html>
