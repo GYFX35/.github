@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Culture Promotion - Global Connect</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
+    <script src="js/main.js"></script>
     <header>
         <h1>Culture Promotion</h1>
         <nav>
@@ -44,11 +46,25 @@
         <section id="share-culture">
             <h3>Share Your Culture</h3>
             <p>We invite you to share aspects of your own culture with our global community. Submit articles, photos, or videos.</p>
-            <button>Contribute Now</button>
+            <button>Contribute Now</button> <!-- This might be for text/article contributions -->
+        </section>
+
+        <section id="share-cultural-moment">
+            <h3>Share Your Cultural Moment via Camera</h3>
+            <p>Capture and share a photo representing your culture or a cultural event.</p>
+            <div id="cameraContainerCulture" style="display: none; border: 1px solid #ccc; padding: 10px; margin-bottom:10px;">
+                <video id="cameraFeedCulture" width="320" height="240" autoplay style="display: block; margin-bottom: 10px;"></video>
+                <img id="capturedImageCulture" src="#" alt="Captured Cultural Moment" style="display: none; max-width: 320px; max-height: 240px; margin-bottom: 10px;">
+                <button id="captureImageCulture" style="display: none;">Capture Moment</button>
+                <button id="retakeImageCulture" style="display: none;">Retake Moment</button>
+            </div>
+            <button id="startCameraCulture" class="enable-camera-access">Capture Cultural Moment</button>
         </section>
     </main>
     <footer>
         <p>&copy; 2024 Global Connect. All rights reserved.</p>
     </footer>
+    <script src="js/camera-culture.js"></script>
+    <!-- Using a separate JS for now to avoid ID conflicts if logic needs to diverge, or we can refactor camera.js to be more generic -->
 </body>
 </html>

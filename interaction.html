@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Interaction - Global Connect</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
+    <script src="js/main.js"></script>
     <header>
         <h1>Global Interaction</h1>
         <nav>
@@ -52,9 +54,23 @@
                 <a href="#">Register</a>
             </div>
         </section>
+
+        <section id="profile-picture">
+            <h3>Your Profile Picture</h3>
+            <p>Use your camera to set or update your profile picture.</p>
+            <div id="cameraContainer" style="display: none; border: 1px solid #ccc; padding: 10px; margin-bottom:10px;">
+                <video id="cameraFeed" width="320" height="240" autoplay style="display: block; margin-bottom: 10px;"></video>
+                <img id="capturedImage" src="#" alt="Captured Image" style="display: none; max-width: 320px; max-height: 240px; margin-bottom: 10px;">
+                <button id="captureImage" style="display: none;">Capture Picture</button>
+                <button id="retakeImage" style="display: none;">Retake Picture</button>
+            </div>
+            <button id="startCamera" class="enable-camera-access">Set/Update Profile Picture</button>
+        </section>
+
     </main>
     <footer>
         <p>&copy; 2024 Global Connect. All rights reserved.</p>
     </footer>
+    <script src="js/camera.js"></script>
 </body>
 </html>
