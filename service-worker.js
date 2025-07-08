@@ -13,7 +13,11 @@ const urlsToCache = [
   '/js/camera.js',
   '/js/camera-culture.js',
   '/js/notifications.js',
-  '/js/sharing.js'
+  '/js/sharing.js',
+  '/dashboard.html',
+  '/games/placeholder_game1/index.html',
+  '/games/placeholder_game2/index.html',
+  '/games/placeholder_game3/index.html'
 ];
 
 self.addEventListener('install', event => {
