@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Profile - FindMe</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <script src="js/main.js"></script>
+    <header>
+        <h1>User Profile</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="culture.html">Culture Promotion</a></li>
+                <li><a href="interaction.html">Global Interaction</a></li>
+                <li><a href="partnership.html">Partnerships</a></li>
+                <li><a href="dashboard.html">Games Dashboard</a></li>
+                <li><a href="profile.html">Profile</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="profile-view">
+            <h2>Your Profile Details</h2>
+            <div id="profileDisplayArea" style="margin-bottom: 30px; padding: 15px; border: 1px solid #eee; border-radius: 5px;">
+                <img id="displayProfilePic" src="images/icons/icon-192x192.png" alt="Profile Picture" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; display: block; margin-bottom: 10px;">
+                <p><strong>Display Name:</strong> <span id="displayDName">Not set</span></p>
+                <p><strong>Bio:</strong> <span id="displayBio">Not set</span></p>
+                <p><strong>Interests:</strong> <span id="displayInterests">Not set</span></p>
+                <p><strong>Location:</strong> <span id="displayLocation">Not set</span></p>
+                <p><strong>Website:</strong> <a id="displayWebsiteLink" href="#" target="_blank"><span id="displayWebsite">Not set</span></a></p>
+            </div>
+        </section>
+
+        <section id="profile-edit">
+            <h2>Edit Your Profile</h2>
+            <form id="profileForm">
+                <div>
+                    <label for="displayName">Display Name:</label>
+                    <input type="text" id="displayName" name="displayName">
+                </div>
+                <div>
+                    <label for="userBio">Bio:</label>
+                    <textarea id="userBio" name="userBio" rows="4"></textarea>
+                </div>
+                <div>
+                    <label for="userInterests">Interests (comma-separated):</label>
+                    <input type="text" id="userInterests" name="userInterests" placeholder="e.g., travel, coding, music">
+                </div>
+                <div>
+                    <label for="userLocation">Location:</label>
+                    <input type="text" id="userLocation" name="userLocation">
+                </div>
+                <div>
+                    <label for="userWebsite">Website:</label>
+                    <input type="url" id="userWebsite" name="userWebsite" placeholder="https://example.com">
+                </div>
+                <div>
+                    <label for="profilePictureFile">Profile Picture:</label>
+                    <input type="file" id="profilePictureFile" name="profilePictureFile" accept="image/*">
+                </div>
+                <button type="submit">Save Profile</button>
+            </form>
+            <div id="profileSaveStatus" style="margin-top:10px;"></div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 FindMe. All rights reserved.</p>
+    </footer>
+    <script src="js/profile.js"></script>
+</body>
+</html>

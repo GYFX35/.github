@@ -376,3 +376,84 @@ footer {
 .delete-story-button:hover {
     background-color: #c82333;
 }
+
+/* Profile Page Styles */
+#profile-view, #profile-edit {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #fff; /* White background for these sections */
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+#profileDisplayArea {
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    background-color: #f9f9f9; /* Light grey for display area */
+}
+
+#profileDisplayArea img#displayProfilePic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    margin-bottom: 15px;
+    border: 3px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+#profileDisplayArea p {
+    margin-bottom: 8px;
+    font-size: 1rem;
+    color: #333;
+}
+#profileDisplayArea p strong {
+    color: #000;
+    margin-right: 5px;
+}
+
+#profileForm label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+#profileForm input[type="text"],
+#profileForm input[type="url"],
+#profileForm textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    font-size: 1rem;
+}
+
+#profileForm input[type="file"] {
+    margin-bottom: 20px;
+}
+
+#profileForm button[type="submit"] {
+    background-color: #007bff; /* Blue */
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease;
+}
+
+#profileForm button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+#profileSaveStatus {
+    margin-top: 15px;
+    font-weight: bold;
+}
