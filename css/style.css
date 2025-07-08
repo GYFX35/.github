@@ -1,0 +1,168 @@
+/* General Body Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Header Styles */
+header {
+    background: #333;
+    color: #fff;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+/* Navigation Styles */
+nav ul {
+    padding: 0;
+    list-style: none;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 20px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.1rem;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* Main Content Styles */
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+section:last-child {
+    border-bottom: none;
+}
+
+h2 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h3 {
+    color: #555;
+    margin-bottom: 15px;
+}
+
+h4 {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+p {
+    margin-bottom: 10px;
+}
+
+/* Hero Section Styles (index.html) */
+#hero {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #e7f3fe; /* Light blue background */
+    border-radius: 8px;
+}
+
+#hero h2 {
+    font-size: 2.2rem;
+    color: #0056b3; /* Darker blue text */
+}
+
+/* Features Section Styles (index.html) */
+#features {
+    text-align: center;
+}
+
+#features .feature {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Culture Page Specific Styles */
+#culture-hero, #interaction-hero, #partnership-hero {
+    text-align: center;
+    padding: 30px 20px;
+    background-color: #e0f7fa; /* Light cyan background */
+    border-radius: 8px;
+}
+
+#culture-hero h2, #interaction-hero h2, #partnership-hero h2 {
+    color: #004d40; /* Dark cyan text */
+}
+
+.culture-item, .interaction-item, .partnership-item, .event {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.culture-item h4, .interaction-item h4, .partnership-item h4, .event h4 {
+    margin-top: 0;
+    color: #00796b; /* Teal color for headings */
+}
+
+/* Buttons */
+button {
+    display: inline-block;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+a {
+    color: #007bff;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Footer Styles */
+footer {
+    text-align: center;
+    padding: 20px;
+    background: #333;
+    color: #fff;
+    margin-top: 30px;
+}
