@@ -66,9 +66,15 @@ function initializeGame() {
             prefersCompliments: false,
             giftPreferences: {
                 specificItems: { "old_tome_nft": 25, "chess_set_rare": 10 },
-                likedTypes: ["PersonalizedCreationNFT"], // If very logical or insightful
+                likedTypes: ["PersonalizedCreationNFT"],
                 dislikedTypes: ["MusicTrackNFT", "WearableAccessoryNFT"],
                 cherishedRarity: "legendary"
+            },
+            puzzleInteractions: {
+                offersPuzzles: ["riddle_of_time", "logic_bridge_crossing"],
+                likesSolvingPuzzles: true, // He might appreciate logical challenges
+                goodAtPuzzleTypes: ["logic", "riddle"],
+                puzzleRewardMultiplier: 1.2
             }
         }
     );
@@ -251,51 +257,52 @@ async function gameLoop() {
 
                         // Let DialogueSystem handle initial NPC response to "wanna hang out"
                         // The actual initiation of activity will depend on this response or further player confirmation.
-                        // For this demo, if NPC seems willing from dialogue, we'll try to initiate.
-                        // A more robust system would have explicit "yes/no" from NPC that game loop acts on.
-
                         if (npcResponse.toLowerCase().includes("sure") || npcResponse.toLowerCase().includes("sounds fun") || npcResponse.toLowerCase().includes("i'd like that")) {
                             console.log(`ALEX: Great! Let's do that.`);
                             const activityResult = await SandboxIntegration.initiateSandboxActivity(currentPlayerId, currentNpcInteractionTarget.npcId, "walk_in_park");
                             if (activityResult.success) {
                                 RelationshipLogic.updateRelationshipScore(currentPlayerId, currentNpcInteractionTarget.npcId, "completed_shared_activity", {
                                     activityValue: 5,
-                                    activityEnjoyedByNPC: true, // Assuming enjoyment for a simple walk if they agreed
+                                    activityEnjoyedByNPC: true,
                                     activityType: "walk_in_park"
                                 });
                                 console.log(`(You and ${currentNpcInteractionTarget.name} enjoy a pleasant walk in the virtual park.)`);
-                                // Optionally, get post-activity dialogue
                                 const postActivityDialogue = await DialogueSystem.getActivityContextualDialogue(currentNpcInteractionTarget.npcId, "walk_in_park", "after_activity_generic_positive");
                                 if(postActivityDialogue) console.log(`${currentNpcInteractionTarget.name}: ${postActivityDialogue}`);
-                                currentNpcInteractionTarget = null; // End interaction after activity for this simple loop
+                                currentNpcInteractionTarget = null;
                             } else {
                                 console.log(`${currentNpcInteractionTarget.name}: (Activity initiation failed: ${activityResult.message})`);
                             }
                     } else {
-                            // NPC declined or was non-committal in dialogue, so don't force activity.
                             console.log(`ALEX: (Okay, maybe another time for a walk.)`);
                         }
-                    } else if (playerInput.toLowerCase().includes("movie date") || playerInput.toLowerCase().includes("watch a movie")) {
-                        // Dialogue for movie invitation is already handled by getNPCResponse.
-                        // If NPC's response is positive, proceed.
-                         if (npcResponse.toLowerCase().includes("i'm in") || npcResponse.toLowerCase().includes("i'd like that") || npcResponse.toLowerCase().includes("sure, let's go")) {
-                            console.log(`ALEX: Awesome! Which movie sounds good? (System picks one for now)`);
-                            const activityResult = await SandboxIntegration.initiateSandboxActivity(currentPlayerId, currentNpcInteractionTarget.npcId, "virtual_movie_date");
+                    } else if (playerInput.toLowerCase().includes("movie date") || playerInput.toLowerCase().includes("watch a movie") || playerInput.toLowerCase().startsWith("see a film")) {
+                        if (npcResponse.toLowerCase().includes("i'm in") || npcResponse.toLowerCase().includes("i'd like that") || npcResponse.toLowerCase().includes("sure, let's go") || npcResponse.toLowerCase().includes("intriguing shared experience")) {
+                            let movieToSuggest = "random"; // Default
+                            if (playerInput.includes("'")) { // Player suggested a movie title
+                                movieToSuggest = playerInput.substring(playerInput.indexOf("'") + 1, playerInput.lastIndexOf("'"));
+                            }
+                            console.log(`ALEX: Awesome! How about '${movieToSuggest === "random" ? "one the system picks" : movieToSuggest}'?`);
+
+                            const activityResult = await SandboxIntegration.initiateSandboxActivity(
+                                currentPlayerId,
+                                currentNpcInteractionTarget.npcId,
+                                "virtual_movie_date",
+                                { movieTitle: movieToSuggest !== "random" ? movieToSuggest : undefined }
+                            );
 
                             if (activityResult.success) {
                                 RelationshipLogic.updateRelationshipScore(currentPlayerId, currentNpcInteractionTarget.npcId, "completed_shared_activity", {
-                                    activityValue: 8, // Movie date might be higher value
+                                    activityValue: 8,
                                     movieEnjoymentFactor: activityResult.details?.movieEnjoymentFactor || 0,
                                     activityType: "virtual_movie_date"
                                 });
                                 console.log(`(You and ${currentNpcInteractionTarget.name} watched ${activityResult.details?.chosenMovie || 'a movie'}.)`);
 
-                                // During movie comment (conceptual)
                                 const duringMovieComment = await DialogueSystem.getActivityContextualDialogue(currentNpcInteractionTarget.npcId, "virtual_movie_date", "during_movie_comment", { chosenMovie: activityResult.details?.chosenMovie });
                                 if(duringMovieComment) console.log(`(${currentNpcInteractionTarget.name} whispers: ${duringMovieComment})`);
-                                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate more movie time
+                                await new Promise(resolve => setTimeout(resolve, 1000));
 
-                                // After movie comment
                                 let afterMovieEvent = "after_movie_neutral";
                                 if ((activityResult.details?.movieEnjoymentFactor || 0) > 3) afterMovieEvent = "after_movie_liked";
                                 else if ((activityResult.details?.movieEnjoymentFactor || 0) < 0) afterMovieEvent = "after_movie_disliked";
@@ -303,15 +310,47 @@ async function gameLoop() {
                                 const afterMovieDialogue = await DialogueSystem.getActivityContextualDialogue(currentNpcInteractionTarget.npcId, "virtual_movie_date", afterMovieEvent, { chosenMovie: activityResult.details?.chosenMovie });
                                 if(afterMovieDialogue) console.log(`${currentNpcInteractionTarget.name}: ${afterMovieDialogue}`);
 
-                                currentNpcInteractionTarget = null; // End interaction
+                                currentNpcInteractionTarget = null;
                             } else {
                                 console.log(`${currentNpcInteractionTarget.name}: (Movie date initiation failed: ${activityResult.message})`);
-                                // NPC might have declined via SandboxIntegration logic if relationship wasn't high enough
-                                // or if DialogueSystem response was negative and we added a check here.
                             }
                         } else {
                              console.log(`ALEX: (Okay, maybe another time for a movie.)`);
                     }
+                    } else if (playerInput.toLowerCase().startsWith("try puzzle") || playerInput.toLowerCase().includes("riddle me this")) {
+                        // NPC offers a puzzle
+                        const offeredPuzzleId = currentNpcInteractionTarget.baseRelationshipFactors.puzzleInteractions?.offersPuzzles?.[0];
+                        if (offeredPuzzleId) {
+                            const puzzle = PuzzleSystem.startPuzzle(currentPlayerId, offeredPuzzleId, currentNpcInteractionTarget.npcId);
+                            if (puzzle) {
+                                console.log(`${currentNpcInteractionTarget.name}: Alright, ${playerProfile.name}, try this: ${puzzle.description}`);
+                                await SandboxIntegration.displaySandboxPuzzleUI(currentPlayerId, puzzle);
+                            } else {
+                                console.log(`${currentNpcInteractionTarget.name}: I don't have a puzzle for you right now.`);
+                            }
+                        } else {
+                             console.log(`${currentNpcInteractionTarget.name}: I'm not really in a puzzle mood right now.`);
+                        }
+                    } else if (playerInput.toLowerCase().startsWith("answer is ")) {
+                        const answer = playerInput.substring(10).trim();
+                        const activePuzzle = PuzzleSystem.getActivePuzzleForPlayer(currentPlayerId);
+                        if (activePuzzle) {
+                            const result = PuzzleSystem.submitPuzzleAnswer(currentPlayerId, answer);
+                            console.log(`ALEX: I think the answer is: ${answer}`);
+                            if (result.success) {
+                                console.log(`${currentNpcInteractionTarget.name}: That's correct, ${playerProfile.name}! Well done!`);
+                                await SandboxIntegration.triggerSandboxPuzzleOutcomeEffect(activePuzzle.id, true);
+                            } else {
+                                console.log(`${currentNpcInteractionTarget.name}: Hmm, that's not quite it. ${result.message.includes("maximum attempts") ? result.message : "Want to try again or ask for a hint?"}`);
+                                if(result.maxAttemptsReached) await SandboxIntegration.triggerSandboxPuzzleOutcomeEffect(activePuzzle.id, false);
+                            }
+                        } else {
+                            console.log(`ALEX: (I don't have an active puzzle to answer.)`);
+                        }
+                    } else if (playerInput.toLowerCase() === "hint please") {
+                        const hint = PuzzleSystem.getHint(currentPlayerId);
+                        console.log(`ALEX: Could I get a hint?`);
+                        console.log(`${currentNpcInteractionTarget.name}: Okay, here's a hint: ${hint}`);
                 }
 
 
@@ -368,7 +407,10 @@ commandQueue = [
     "what are your thoughts on the future?",
     "give lofi_music_track_common", // Rian should dislike this (MusicTrackNFT, lofi genre)
     "give poem_book_common", // Rian might be neutral or slightly positive if it's profound (bookworm)
-    "care to see a film? perhaps 'The Algorithm's Secret'?", // Invite Rian to a specific movie
+    "care to see a film? perhaps 'The Algorithm's Secret'?", // Invite Rian to a specific movie he might like
+    "try puzzle", // Rian offers a puzzle
+    "hint please", // Ask Rian for a hint
+    "answer is a map", // Attempt to answer Rian's puzzle (assuming it's riddle_of_time)
     "exit",
 
     "quit"

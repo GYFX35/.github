@@ -170,6 +170,45 @@ class SandboxIntegration {
         console.log(`[Sandbox] Item '${itemId}' spawned as '${spawnedObjectId}'. (Mocked)`);
         return spawnedObjectId;
     }
+
+    /**
+     * Displays a puzzle UI or visual elements in the Sandbox.
+     * @param {string} playerId
+     * @param {object} puzzle - The puzzle object (id, title, description, type).
+     * @returns {Promise<boolean>}
+     */
+    async displaySandboxPuzzleUI(playerId, puzzle) {
+        console.log(`[Sandbox] Displaying puzzle UI for player ${playerId}: '${puzzle.title}' - "${puzzle.description}"`);
+        // Conceptual:
+        // if (this.sandboxAPI && this.sandboxAPI.showPuzzleInterface) {
+        //     return this.sandboxAPI.showPuzzleInterface(playerId, puzzle);
+        // }
+        // For a text-based game, this might just mean printing to a special console area.
+        // For a visual Sandbox, this could involve showing a modal, activating in-world objects, etc.
+        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log(`[Sandbox] Puzzle UI displayed (Mocked).`);
+        return true;
+    }
+
+    /**
+     * Triggers a visual or auditory effect in the Sandbox when a puzzle is solved.
+     * @param {string} puzzleId
+     * @param {boolean} success - Whether the puzzle was solved successfully.
+     * @returns {Promise<boolean>}
+     */
+    async triggerSandboxPuzzleOutcomeEffect(puzzleId, success) {
+        const effectType = success ? "solved" : "failed";
+        console.log(`[Sandbox] Triggering puzzle '${puzzleId}' ${effectType} visual/audio effect.`);
+        // Conceptual:
+        // if (success && this.sandboxAPI && this.sandboxAPI.playEffect) {
+        //    this.sandboxAPI.playEffect("puzzle_solved_fireworks", { position: "player_location" });
+        // } else if (!success && this.sandboxAPI && this.sandboxAPI.playEffect) {
+        //    this.sandboxAPI.playEffect("puzzle_failed_thud", { position: "player_location" });
+        // }
+        await new Promise(resolve => setTimeout(resolve, 300));
+        console.log(`[Sandbox] Puzzle ${effectType} effect triggered (Mocked).`);
+        return true;
+    }
 }
 
 module.exports = new SandboxIntegration(); // Singleton instance

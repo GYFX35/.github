@@ -108,6 +108,23 @@ class RelationshipLogic {
                     console.log(`Movie enjoyment factor for ${npc.name}: ${params.movieEnjoymentFactor}`);
                 }
                 break;
+            case "puzzle_solved_with_npc": // Player successfully solved a puzzle, potentially with NPC's help or for them
+                scoreChange = params.puzzleValue || 5; // Base points for solving
+                if (npc && npc.baseRelationshipFactors.puzzleInteractions?.likesSolvingPuzzles) {
+                    scoreChange += 3; // NPC enjoys solving puzzles together
+                }
+                if (npc && npc.baseRelationshipFactors.puzzleInteractions?.puzzleRewardMultiplier) {
+                    scoreChange = Math.floor(scoreChange * npc.baseRelationshipFactors.puzzleInteractions.puzzleRewardMultiplier);
+                }
+                console.log(`Puzzle solved with ${npc ? npc.name : 'system'}, base value: ${params.puzzleValue}, final change: ${scoreChange}`);
+                break;
+            case "puzzle_failed_with_npc": // Player failed a puzzle
+                scoreChange = params.puzzleValue || -2; // Base penalty
+                 if (npc && npc.corePersonality && npc.corePersonality.patience < 5) { // Less patient NPC
+                    scoreChange -= 1;
+                }
+                console.log(`Puzzle failed with ${npc ? npc.name : 'system'}, base value: ${params.puzzleValue}, final change: ${scoreChange}`);
+                break;
             default:
                 console.warn(`Unknown interaction type: ${interactionType}`);
                 return;
