@@ -1,6 +1,20 @@
 import enum
 import time # For game tick simulation later
 import random # For AI and hit chances
+import copy # For deep copying stats dicts
+
+# --- Global Data Log ---
+GAME_DATA_LOG = []
+
+def clear_game_data_log():
+    """Clears the global game data log."""
+    global GAME_DATA_LOG
+    GAME_DATA_LOG = []
+
+def get_game_data_log():
+    """Returns the global game data log."""
+    global GAME_DATA_LOG
+    return GAME_DATA_LOG
 
 # --- Constants ---
 MAX_HP = 100
@@ -150,7 +164,7 @@ class GameState:
     def log_event(self, message: str):
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         log_entry = f"[{timestamp}] {message}"
-        print(log_entry) # For real-time feedback during development
+        # print(log_entry) # For real-time feedback during development - can be noisy with data logging
         self.event_log.append(log_entry)
         if len(self.event_log) > 100: # Keep log from growing too large
             self.event_log.pop(0)
@@ -187,7 +201,56 @@ def initialize_new_game() -> GameState:
     game = GameState()
     game.log_event("New game initialized.")
     # Potential further setup: e.g., set opponent AI profile if we have different types
+    _log_game_state_data(game, event_trigger="initialize_new_game")
     return game
+
+def _log_game_state_data(game_state: GameState, event_trigger: str, action_taken: ActionType = None, acting_fighter: FighterName = None):
+    """Helper function to create and append a structured log entry."""
+    if not hasattr(game_state, 'game_id'): # Ensure game_id attribute exists for logging consistency
+        game_state.game_id = "sim_game" # Default for simulations if not set externally
+
+    log_entry = {
+        "game_id": game_state.game_id,
+        "log_timestamp": time.time(), # Real timestamp of logging
+        "sim_time_elapsed": (game_state.last_tick_time - getattr(game_state, '_start_time_for_sim_elapsed', game_state.last_tick_time)) if hasattr(game_state, 'last_tick_time') else 0,
+        "current_round": game_state.current_round,
+        "round_timer": round(game_state.round_timer, 2) if game_state.round_timer is not None else None,
+        "match_status": game_state.match_status.value,
+        "player_hp": game_state.player.hp,
+        "player_stamina": round(game_state.player.stamina, 2),
+        "player_current_action": game_state.player.current_action.value,
+        "player_stats": copy.deepcopy(game_state.player.stats), # Deep copy to avoid issues with dicts of dicts
+        "opponent_hp": game_state.opponent.hp,
+        "opponent_stamina": round(game_state.opponent.stamina, 2),
+        "opponent_current_action": game_state.opponent.current_action.value,
+        "opponent_stats": copy.deepcopy(game_state.opponent.stats),
+        "knockdown_is_active": game_state.knockdown_info["is_knockdown"],
+        "knockdown_fighter_down": game_state.knockdown_info["fighter_down"].value if game_state.knockdown_info["fighter_down"] else None,
+        "knockdown_count": round(game_state.knockdown_info["count"], 2),
+        "event_trigger": event_trigger,
+        "action_taken_by_player": None,
+        "action_taken_by_opponent": None,
+        "winner": game_state.winner.value if isinstance(game_state.winner, FighterName) else game_state.winner if isinstance(game_state.winner, str) else None,
+    }
+    # Convert ActionType keys in stats to strings for easier serialization (e.g., to JSON/CSV)
+    for fighter_stats_key in ["player_stats", "opponent_stats"]:
+        stats_dict = log_entry[fighter_stats_key]
+        new_stats_dict = {}
+        for k, v in stats_dict.items():
+            if isinstance(k, ActionType):
+                new_stats_dict[k.value] = v
+            else:
+                new_stats_dict[k] = v
+        log_entry[fighter_stats_key] = new_stats_dict
+
+
+    if acting_fighter == FighterName.PLAYER and action_taken:
+        log_entry["action_taken_by_player"] = action_taken.value
+    elif acting_fighter == FighterName.OPPONENT and action_taken:
+        log_entry["action_taken_by_opponent"] = action_taken.value
+
+    GAME_DATA_LOG.append(log_entry)
+
 
 def execute_fighter_action(game_state: GameState, attacker_name: FighterName, action_type: ActionType):
     """
@@ -198,21 +261,27 @@ def execute_fighter_action(game_state: GameState, attacker_name: FighterName, ac
     defender_name = FighterName.OPPONENT if attacker_name == FighterName.PLAYER else FighterName.PLAYER
     defender = game_state.get_fighter_by_name(defender_name)
 
+    pre_action_player_hp = game_state.player.hp # For logging if action fails
+    pre_action_opponent_hp = game_state.opponent.hp
+
     if not attacker.can_perform_action(action_type):
         game_state.log_event(f"{attacker.name.value} tried {action_type.value} but couldn't (low stamina/HP).")
         attacker.current_action = ActionType.IDLE # Ensure action is reset
+        # Log state even if action failed to execute
+        _log_game_state_data(game_state, event_trigger="action_failed_cannot_perform", action_taken=action_type, acting_fighter=attacker_name)
         return
 
     action_info = ACTION_DETAILS.get(action_type)
     if not action_info: # Movement or other non-combat actions
         attacker.current_action = action_type
         game_state.log_event(f"{attacker.name.value} performs {action_type.value}.")
+        _log_game_state_data(game_state, event_trigger="fighter_movement", action_taken=action_type, acting_fighter=attacker_name)
         # Movement logic would be handled separately if it has specific effects on distance, etc.
         # For now, just log and set current_action. Stamina cost for movement can be added.
         return
 
     attacker.consume_stamina(action_info["stamina_cost"])
-    attacker.current_action = action_type
+    attacker.current_action = action_type # Set current action before logging, but after stamina consumption
     attacker.action_start_time = time.time() # For timed actions like block
 
     game_state.log_event(f"{attacker.name.value} uses {action_type.value} (Stamina: {attacker.stamina})")
@@ -239,6 +308,7 @@ def execute_fighter_action(game_state: GameState, attacker_name: FighterName, ac
                 f"{defender.name.value} HP: {defender.hp}"
             )
             if defender.hp <= 0:
+                # Knockdown will be handled, which will log its own event
                 handle_knockdown(game_state, defender_name, attacker_name)
         else:
             game_state.log_event(f"{action_type.value} from {attacker.name.value} missed.")
@@ -247,18 +317,22 @@ def execute_fighter_action(game_state: GameState, attacker_name: FighterName, ac
     elif action_type == ActionType.BLOCK:
         # Block is a state. Its effect happens when an opponent attacks.
         # Stamina drain while active blocking can be handled in game_tick.
-        pass
+        pass # Logging for block initiation is covered by the generic log after this function
     elif action_type == ActionType.DODGE:
         # Dodge effect: if opponent attacks during dodge window, it's a miss.
         # Could also set up a counter-attack window.
-        pass
+        pass # Logging for dodge initiation is covered by the generic log
+
+    # Log state after action execution
+    # The acting_fighter's current_action is already set to action_type
+    _log_game_state_data(game_state, event_trigger="fighter_action_resolved", action_taken=action_type, acting_fighter=attacker_name)
 
     # Reset attacker's action to IDLE after a short duration for non-continuous actions
     # Continuous actions like BLOCK will be managed by their own logic or by game_tick
     if action_type not in [ActionType.BLOCK]: # Block might persist
          # This is a simplification; in a real-time game, actions have durations.
          # For now, assume offensive actions are somewhat instant for turn-based processing.
-        attacker.current_action = ActionType.IDLE
+        attacker.current_action = ActionType.IDLE # Reset after logging the action state
 
 
 def handle_knockdown(game_state: GameState, downed_fighter_name: FighterName, attacker_name: FighterName):
@@ -279,13 +353,16 @@ def handle_knockdown(game_state: GameState, downed_fighter_name: FighterName, at
     game_state.is_round_active = False # Pause round during knockdown count
 
     game_state.log_event(f"{downed_fighter.name.value} is KNOCKED DOWN by {attacker.name.value}!")
+    _log_game_state_data(game_state, event_trigger="knockdown_start", acting_fighter=attacker_name)
+
 
     # TKO Check: 3 knockdowns in a round
     if downed_fighter.knockdowns_this_round >= 3:
         game_state.log_event(f"Three knockdowns in this round! {attacker.name.value} wins by TKO!")
         game_state.winner = attacker.name
         # game_state.match_status = GameStatus.MATCH_OVER # This will be set by end_match
-        # end_match(game_state) # This might be called from game_tick or a managing function
+        # end_match(game_state) will be called from game_tick which will log the match_over state
+        _log_game_state_data(game_state, event_trigger="tko_knockdown_limit") # Log TKO specifically
         return # Match ends here due to TKO
 
     # The actual 10-count will be managed by game_tick or a similar time-based update function.
@@ -344,7 +421,11 @@ def start_new_round(game_state: GameState):
     game_state.log_event(
         f"Round {game_state.current_round} starting! Player SP: {game_state.player.stamina}, Opponent SP: {game_state.opponent.stamina}"
     )
+    if not hasattr(game_state, '_start_time_for_sim_elapsed'): # Initialize if not present
+        game_state._start_time_for_sim_elapsed = time.time()
     game_state.last_tick_time = time.time() # Reset tick timer for the new round
+    _log_game_state_data(game_state, event_trigger="start_new_round")
+
 
 def end_round_due_to_time(game_state: GameState):
     """Handles the end of a round when the timer expires."""
@@ -352,28 +433,40 @@ def end_round_due_to_time(game_state: GameState):
     game_state.log_event(f"Round {game_state.current_round} has ended due to time.")
 
     score_round(game_state) # Assign points for the completed round
+    _log_game_state_data(game_state, event_trigger="round_end_time")
+
 
     if game_state.current_round >= game_state.max_rounds:
         game_state.log_event("Maximum rounds reached.")
-        end_match(game_state)
+        end_match(game_state) # This will also log
     else:
         game_state.match_status = GameStatus.BETWEEN_ROUNDS
         game_state.log_event("Proceeding to next round shortly.")
+        _log_game_state_data(game_state, event_trigger="between_rounds_start")
         # A delay or specific trigger would start the next round in a full game loop
 
 def end_match(game_state: GameState):
     """Finalizes the match, determining a winner if not already set by KO/TKO."""
     game_state.is_round_active = False # Ensure no further actions
     game_state.match_status = GameStatus.MATCH_OVER
+    final_winner_log_message = ""
 
     if game_state.winner: # Winner already determined by KO/TKO
-        game_state.log_event(f"Match ended. Winner by KO/TKO: {game_state.winner.value}")
+        final_winner_log_message = f"Match ended. Winner by KO/TKO: {game_state.winner.value}"
+        game_state.log_event(final_winner_log_message)
     else: # Match ended by rounds completing, determine by decision
-        determine_winner_by_decision(game_state)
-        if game_state.winner:
-            game_state.log_event(f"Match ended. Winner by decision: {game_state.winner if isinstance(game_state.winner, str) else game_state.winner.value}")
-        else: # Should mean it's a draw
-             game_state.log_event(f"Match ended in a DRAW.")
+        determine_winner_by_decision(game_state) # This sets game_state.winner
+        if game_state.winner and game_state.winner != "draw":
+            final_winner_log_message = f"Match ended. Winner by decision: {game_state.winner.value}"
+            game_state.log_event(final_winner_log_message)
+        elif game_state.winner == "draw":
+            final_winner_log_message = "Match ended in a DRAW by decision."
+            game_state.log_event(final_winner_log_message)
+        else: # Should not happen if determine_winner_by_decision works
+            final_winner_log_message = "Match ended by rounds, winner determination pending or error."
+            game_state.log_event(final_winner_log_message)
+
+    _log_game_state_data(game_state, event_trigger="match_end")
 
 
     # Further actions: display final stats, offer rematch, etc.
@@ -518,91 +611,201 @@ if __name__ == '__main__':
     print(f"Match Winner: {game.winner if isinstance(game.winner, str) else game.winner.value if game.winner else 'N/A'}")
 
 
-# --- Basic AI Logic ---
+# --- AI Logic ---
+# Attempt to import the prediction service for ML-based AI
+try:
+    import prediction_service
+    ML_AI_AVAILABLE = True
+    print("Successfully imported prediction_service for ML AI.")
+except ImportError:
+    ML_AI_AVAILABLE = False
+    print("Warning: prediction_service not found. ML-based AI will not be available. Falling back to rule-based AI.")
+    prediction_service = None # Ensure it's defined even if import fails
 
-def decide_ai_action(game_state: GameState) -> ActionType:
+DEFAULT_AI_MODE = "RULE_BASED" # Can be "RULE_BASED" or "ML_BASED"
+
+def decide_ai_action(game_state: GameState, ai_mode: str = DEFAULT_AI_MODE) -> ActionType:
     """
-    Simple AI decision-making logic for the opponent.
-    Returns an ActionType for the opponent to perform.
+    AI decision-making logic for the opponent.
+    Can use rule-based logic or an ML model via prediction_service.
+
+    Args:
+        game_state (GameState): The current state of the game.
+        ai_mode (str): The mode of AI to use ("RULE_BASED" or "ML_BASED").
+                       Defaults to DEFAULT_AI_MODE.
+
+    Returns:
+        ActionType: The action chosen by the AI.
     """
     opponent = game_state.opponent
-    player = game_state.player
+    player = game_state.player # For rule-based part
 
-    # Very basic AI:
-    # 1. If low stamina, try to rest (IDLE) or throw a quick jab if possible.
-    # 2. If player is low HP, be more aggressive.
-    # 3. If player is blocking, maybe wait or try a feint (not implemented yet).
-    # 4. Otherwise, mix of attack and defense.
+    # Attempt to use ML-based AI if specified and available
+    if ai_mode == "ML_BASED":
+        if ML_AI_AVAILABLE and prediction_service.ACTION_MODEL is not None:
+            game_state.log_event(f"Opponent AI attempting ML model for action decision. (Model: {'Loaded' if prediction_service.ACTION_MODEL else 'Not Loaded'})")
+            predicted_action = prediction_service.predict_opponent_action(game_state)
 
-    possible_actions = []
-
-    if not opponent.can_perform_action(ActionType.JAB) and \
-       not opponent.can_perform_action(ActionType.CROSS) and \
-       not opponent.can_perform_action(ActionType.BLOCK): # Cannot do much
-        return ActionType.IDLE # Conserve stamina or is stunned/unable
-
-    # Stamina considerations
-    if opponent.stamina < ACTION_DETAILS[ActionType.CROSS]["stamina_cost"]: # Not enough for a cross
-        if opponent.can_perform_action(ActionType.JAB):
-            possible_actions.append(ActionType.JAB)
-        if opponent.can_perform_action(ActionType.BLOCK):
-             possible_actions.append(ActionType.BLOCK)
-        if not possible_actions: return ActionType.IDLE
-        return random.choice(possible_actions)
-
-    # Aggression if player is low HP
-    if player.hp < MAX_HP * 0.3: # Player is weak
-        if opponent.can_perform_action(ActionType.CROSS):
-            possible_actions.append(ActionType.CROSS)
-        if opponent.can_perform_action(ActionType.JAB):
-            possible_actions.append(ActionType.JAB)
-
-    # Default actions
-    if opponent.can_perform_action(ActionType.JAB): possible_actions.append(ActionType.JAB)
-    if opponent.can_perform_action(ActionType.CROSS): possible_actions.append(ActionType.CROSS)
-    if opponent.can_perform_action(ActionType.HOOK): possible_actions.append(ActionType.HOOK) # Add hook if enough stamina
-    if opponent.can_perform_action(ActionType.UPPERCUT): possible_actions.append(ActionType.UPPERCUT) # Add uppercut
-
-    if opponent.can_perform_action(ActionType.BLOCK):
-        # Add block more frequently if player is aggressive or AI is defensive
-        if player.current_action not in [ActionType.IDLE, ActionType.BLOCK] or opponent.hp < MAX_HP * 0.5:
-            possible_actions.extend([ActionType.BLOCK] * 3) # Weight block higher
+            # Validate if the ML model's chosen action is performable
+            if opponent.can_perform_action(predicted_action):
+                game_state.log_event(f"ML AI chose valid action: {predicted_action.value}")
+                return predicted_action
+            else:
+                game_state.log_event(f"ML AI chose unperformable action: {predicted_action.value}. Falling back to rule-based for this turn.")
+                # Fallback to rule-based for this specific turn if ML action is invalid
+                # This is better than just picking a random valid action, as rule-based has more logic.
+                ai_mode = "RULE_BASED" # Force rule-based for this turn
         else:
-            possible_actions.append(ActionType.BLOCK)
+            game_state.log_event("ML_BASED AI mode selected, but model or service is not available. Falling back to RULE_BASED.")
+            ai_mode = "RULE_BASED" # Fallback to rule-based if ML components are missing
 
-    # Basic distance consideration (conceptual, as distance isn't fully implemented)
-    # if distance_between_fighters > certain_threshold:
-    #     if opponent.can_perform_action(ActionType.ADVANCE): possible_actions.append(ActionType.ADVANCE)
-    # else: # Close range
-    #     if opponent.can_perform_action(ActionType.UPPERCUT): possible_actions.append(ActionType.UPPERCUT)
+    # --- Rule-based AI (default or if ML fallback occurs) ---
+    if ai_mode == "RULE_BASED":
+        game_state.log_event("Opponent AI using rule-based logic for action decision.")
+        # (Rest of the rule-based logic remains the same)
+        possible_actions = []
 
-    if not possible_actions:
-        return ActionType.IDLE # Fallback if no other action is viable
+        # Validate if the ML model's chosen action is performable
+        if opponent.can_perform_action(predicted_action):
+            game_state.log_event(f"ML AI chose valid action: {predicted_action.value}")
+            return predicted_action
+        else:
+            game_state.log_event(f"ML AI chose unperformable action: {predicted_action.value}. Falling back.")
+            # Fallback logic: could be to rule-based, or pick a random valid action, or just IDLE
+            # For now, let's try a random valid offensive/defensive action or IDLE as a simpler fallback.
+            valid_actions = [a for a in [ActionType.JAB, ActionType.CROSS, ActionType.BLOCK, ActionType.DODGE, ActionType.IDLE] if opponent.can_perform_action(a)]
+            if valid_actions:
+                fallback_action = random.choice(valid_actions)
+                game_state.log_event(f"ML AI fallback to: {fallback_action.value}")
+                return fallback_action
+            else: # Should always be able to IDLE if HP > 0
+                 game_state.log_event(f"ML AI fallback to IDLE (no other valid actions).")
+                 return ActionType.IDLE
 
-    return random.choice(possible_actions)
+    # --- Rule-based AI (default or fallback) ---
+    if ai_mode == "RULE_BASED" or not (ML_AI_AVAILABLE and prediction_service.ACTION_MODEL is not None) :
+        if ai_mode == "ML_BASED": # Log if ML was intended but unavailable
+             game_state.log_event("ML AI model not available, falling back to rule-based AI.")
+        else: # Explicitly rule-based
+            game_state.log_event("Opponent AI using rule-based logic for action decision.")
+
+        possible_actions = []
+        if not opponent.can_perform_action(ActionType.JAB) and \
+           not opponent.can_perform_action(ActionType.CROSS) and \
+           not opponent.can_perform_action(ActionType.BLOCK):
+            return ActionType.IDLE
+
+        if opponent.stamina < ACTION_DETAILS[ActionType.CROSS]["stamina_cost"]:
+            if opponent.can_perform_action(ActionType.JAB): possible_actions.append(ActionType.JAB)
+            if opponent.can_perform_action(ActionType.BLOCK): possible_actions.append(ActionType.BLOCK)
+            if not possible_actions: return ActionType.IDLE
+            return random.choice(possible_actions)
+
+        if player.hp < MAX_HP * 0.3:
+            if opponent.can_perform_action(ActionType.CROSS): possible_actions.append(ActionType.CROSS)
+            if opponent.can_perform_action(ActionType.JAB): possible_actions.append(ActionType.JAB)
+
+        for action in [ActionType.JAB, ActionType.CROSS, ActionType.HOOK, ActionType.UPPERCUT]:
+            if opponent.can_perform_action(action): possible_actions.append(action)
+
+        if opponent.can_perform_action(ActionType.BLOCK):
+            if player.current_action not in [ActionType.IDLE, ActionType.BLOCK] or opponent.hp < MAX_HP * 0.5:
+                possible_actions.extend([ActionType.BLOCK] * 3)
+            else:
+                possible_actions.append(ActionType.BLOCK)
+
+        if opponent.can_perform_action(ActionType.DODGE): # Add dodge to possibilities
+            possible_actions.append(ActionType.DODGE)
+
+        if not possible_actions:
+            # This should ideally not happen if IDLE is always possible or if can_perform_action(IDLE) is true
+            game_state.log_event("Rule-based AI: No possible actions found, defaulting to IDLE.")
+            return ActionType.IDLE
+
+        chosen_action = random.choice(possible_actions)
+        game_state.log_event(f"Rule-based AI chose action: {chosen_action.value}")
+        return chosen_action
+
+    # This part should ideally not be reached if ai_mode is one of the handled values.
+    game_state.log_event(f"AI decision error: Unknown ai_mode '{ai_mode}'. Defaulting to IDLE.")
+    return ActionType.IDLE
 
 
 if __name__ == '__main__':
     # ... (previous test code remains) ...
     print("\n--- Testing AI Decision ---")
+    # Setup for ML AI testing (mocking the prediction_service setup)
+    if ML_AI_AVAILABLE:
+        print("Attempting to set up mock action model for testing decide_ai_action with ML_BASED mode.")
+        class MockActionModelLocal: # Renamed to avoid conflict if prediction_service also has MockActionModel
+            def predict(self, X):
+                # Simple mock: if self_hp is low, try to block, else jab.
+                # Ensure ACTION_MODEL_LE_CLASSES is accessible, assume it's set in prediction_service
+                le_classes = prediction_service.ACTION_MODEL_LE_CLASSES if prediction_service.ACTION_MODEL_LE_CLASSES else [act.value for act in ActionType]
+
+                if 'self_hp' in X.columns and X['self_hp'].iloc[0] < 30 :
+                    if ActionType.BLOCK.value in le_classes:
+                        return np.array([le_classes.index(ActionType.BLOCK.value)])
+                if ActionType.JAB.value in le_classes:
+                    return np.array([le_classes.index(ActionType.JAB.value)])
+                return np.array([0]) # Default to first class if JAB/BLOCK not found (should not happen with full list)
+
+        mock_le_action_classes_main = [act.value for act in ActionType]
+        # Feature order should match what preprocess_gamestate_for_action_prediction creates
+        # Copied from prediction_service.py's __main__ for consistency
+        mock_action_feature_order_main = [
+            'self_hp', 'self_stamina', 'other_player_hp', 'other_player_stamina',
+            'hp_diff_self_vs_other', 'stamina_diff_self_vs_other',
+            'current_round', 'round_timer',
+        ] + [f'other_player_action_{act_type_str}' for act_type_str in ['IDLE', 'JAB', 'CROSS', 'HOOK', 'UPPERCUT', 'BLOCK', 'DODGE', 'ADVANCE', 'RETREAT', 'SIDESTEP_LEFT', 'SIDESTEP_RIGHT']]
+        mock_action_feature_order_main = sorted(list(set(mock_action_feature_order_main)))
+
+        if prediction_service: # Ensure prediction_service was imported
+            prediction_service.set_action_model_details(MockActionModelLocal(), mock_action_feature_order_main, mock_le_action_classes_main)
+        else:
+            print("Cannot set mock action model details: prediction_service is None.")
+            ML_AI_AVAILABLE = False # Mark as unavailable if setup fails
+    else:
+        print("ML_AI_AVAILABLE is False, will only test RULE_BASED AI.")
+
+
     game = initialize_new_game()
-    start_new_round(game) # Need a round to be active for AI to consider actions properly
+    game.game_id = "ai_decision_test"
+    start_new_round(game)
 
-    for _ in range(10): # Simulate a few AI decisions
-        ai_action = decide_ai_action(game)
-        print(f"AI decided to: {ai_action.value}")
-        if ai_action != ActionType.IDLE and ai_action != ActionType.BLOCK : # Simulate performing the action to change state
-             if game.opponent.can_perform_action(ai_action):
-                game.opponent.consume_stamina(ACTION_DETAILS[ai_action]["stamina_cost"])
-        elif ai_action == ActionType.BLOCK:
+    print("\nTesting RULE_BASED AI:")
+    for i in range(3):
+        ai_action_rule = decide_ai_action(game, ai_mode="RULE_BASED")
+        print(f"Rule-based AI decided: {ai_action_rule.value} (Stamina: {game.opponent.stamina}, HP: {game.opponent.hp})")
+        # Simulate performing action to change state slightly for next decision
+        if game.opponent.can_perform_action(ai_action_rule) and ai_action_rule not in [ActionType.IDLE, ActionType.BLOCK]:
+            # Check if action has stamina_cost defined before trying to access it
+            if ai_action_rule in ACTION_DETAILS and "stamina_cost" in ACTION_DETAILS[ai_action_rule]:
+                 game.opponent.consume_stamina(ACTION_DETAILS[ai_action_rule]['stamina_cost'])
+        elif ai_action_rule == ActionType.BLOCK:
             game.opponent.current_action = ActionType.BLOCK
-            # AI might hold block for a bit in a real game tick
-        # Simulate player action to change context for AI
-        if random.random() < 0.5 and game.player.can_perform_action(ActionType.JAB):
-            execute_fighter_action(game, FighterName.PLAYER, ActionType.JAB)
-            print(f"Player threw a JAB. Player HP: {game.player.hp}, Opponent HP: {game.opponent.hp}")
 
-        print(f"Opponent state: HP {game.opponent.hp}, Stamina {game.opponent.stamina}")
+
+    if ML_AI_AVAILABLE and prediction_service and prediction_service.ACTION_MODEL is not None:
+        print("\nTesting ML_BASED AI:")
+        game_ml = initialize_new_game() # Fresh game state for ML test
+        game_ml.game_id = "ml_ai_decision_test"
+        start_new_round(game_ml)
+        game_ml.opponent.hp = 25 # Set low HP to test mock ML model's block logic
+
+        for i in range(3):
+            ai_action_ml = decide_ai_action(game_ml, ai_mode="ML_BASED")
+            print(f"ML-based AI decided: {ai_action_ml.value} (Stamina: {game_ml.opponent.stamina}, HP: {game_ml.opponent.hp})")
+            if game_ml.opponent.can_perform_action(ai_action_ml) and ai_action_ml not in [ActionType.IDLE, ActionType.BLOCK]:
+                if ai_action_ml in ACTION_DETAILS and "stamina_cost" in ACTION_DETAILS[ai_action_ml]:
+                    game_ml.opponent.consume_stamina(ACTION_DETAILS[ai_action_ml]['stamina_cost'])
+            elif ai_action_ml == ActionType.BLOCK:
+                game_ml.opponent.current_action = ActionType.BLOCK
+            # Change player state to see if AI reacts
+            game_ml.player.current_action = random.choice([ActionType.JAB, ActionType.IDLE])
+            if i % 2 == 0 : game_ml.opponent.hp = min(100, game_ml.opponent.hp + 10) # vary hp
+    else:
+        print("\nSkipping ML_BASED AI test as it's not available or model not set.")
 
 
 # --- Basic Game Loop Structure (for testing logic) ---
@@ -630,15 +833,26 @@ def game_tick(game_state: GameState):
     if game_state.knockdown_info["is_knockdown"]:
         game_state.knockdown_info["count"] += delta_time # Increment count by time passed
         game_state.log_event(f"Knockdown count: {game_state.knockdown_info['count']:.1f}")
+    # Log intermediate knockdown count state
+    _log_game_state_data(game_state, event_trigger="knockdown_counting")
+
         if game_state.knockdown_info["count"] >= KNOCKDOWN_COUNT_MAX:
             downed_fighter_name = game_state.knockdown_info["fighter_down"]
             attacker_name = FighterName.PLAYER if downed_fighter_name == FighterName.OPPONENT else FighterName.OPPONENT
 
             game_state.log_event(f"{downed_fighter_name.value} is KNOCKED OUT!")
             game_state.winner = attacker_name
+        # end_match will be called, which logs the final state
+        _log_game_state_data(game_state, event_trigger="knockout") # Log KO specifically
             end_match(game_state)
             return # Match ends
         # No "getting up" mechanic yet if HP is 0. If HP > 0, could add it here.
+    # For now, if not KO, assume fighter gets up if count is not max (implicitly handled by returning)
+    # If we add a "get up" event, log it here.
+    # if game_state.knockdown_info["count"] < KNOCKDOWN_COUNT_MAX and downed_fighter.hp > 0:
+    # _log_game_state_data(game_state, event_trigger="fighter_recovered_from_knockdown_count")
+    # This is tricky as "getting up" isn't an explicit event yet, rather an absence of KO.
+    # The next tick will resume if is_knockdown is false.
         return # Pause other game logic during knockdown count
 
     if not game_state.is_round_active:
@@ -646,7 +860,8 @@ def game_tick(game_state: GameState):
             # Could have a timer for between_rounds state
             game_state.between_rounds_timer -= delta_time
             if game_state.between_rounds_timer <=0:
-                start_new_round(game_state)
+            start_new_round(game_state) # This will log "start_new_round"
+            # No separate log here for between_rounds_end, as start_new_round covers it.
         return # Round not active (e.g., between rounds, paused)
 
     # Update round timer
@@ -677,21 +892,29 @@ def game_tick(game_state: GameState):
         player_action = PLAYER_ACTION_QUEUE.pop(0)
         # Check if player is stunned or otherwise unable to act (future enhancement)
         if game_state.player.current_action == ActionType.IDLE: # Can only act if idle (simplification)
+         # execute_fighter_action will log the action outcome
              execute_fighter_action(game_state, FighterName.PLAYER, player_action)
         else:
             game_state.log_event(f"Player tried {player_action.value} but was busy with {game_state.player.current_action.value}")
+        # Log this busy state
+        _log_game_state_data(game_state, event_trigger="player_action_attempt_busy", action_taken=player_action)
 
 
     # Process AI action (AI might act based on a timer or reaction, simplified here)
     # For a more turn-based feel in testing, AI could act after player or on its own "turn"
     # For real-time, AI decision could be more frequent or reactive.
-    if game_state.opponent.current_action == ActionType.IDLE: # AI acts if idle
+    if game_state.opponent.current_action == ActionType.IDLE and game_state.is_round_active and not game_state.knockdown_info["is_knockdown"]: # AI acts if idle and game is active
         ai_action_choice = decide_ai_action(game_state)
         if ai_action_choice != ActionType.IDLE:
+            # execute_fighter_action will log the action outcome
             execute_fighter_action(game_state, FighterName.OPPONENT, ai_action_choice)
+        # else: # AI chose IDLE
+            # _log_game_state_data(game_state, event_trigger="ai_action_idle", action_taken=ActionType.IDLE, acting_fighter=FighterName.OPPONENT)
+
 
     # Reset actions that are not meant to be persistent states after some time
     # (This is a very rough way to handle action durations)
+    # This reset happens *after* actions are logged for the tick by execute_fighter_action
     action_duration_limit = 0.5 # seconds
     if game_state.player.current_action not in [ActionType.IDLE, ActionType.BLOCK] and \
        (current_time - game_state.player.action_start_time > action_duration_limit):
@@ -709,62 +932,88 @@ def game_tick(game_state: GameState):
              game_state.between_rounds_timer = 5 # 5 seconds rest
         return
 
-    # Log game state periodically for debugging if needed
-    # print(f"Tick: P_HP:{game_state.player.hp:.0f} P_SP:{game_state.player.stamina:.0f} ({game_state.player.current_action.value}) | "
-    #       f"O_HP:{game_state.opponent.hp:.0f} O_SP:{game_state.opponent.stamina:.0f} ({game_state.opponent.current_action.value}) | "
-    #       f"Timer: {game_state.round_timer:.1f}s")
+    # Log game state periodically for debugging if needed (less frequent than every tick)
+    # if hasattr(game_state, 'log_counter') and game_state.log_counter % 10 == 0: # Example: log every 10 ticks
+    #    _log_game_state_data(game_state, event_trigger="periodic_tick_update")
+    # game_state.log_counter = getattr(game_state, 'log_counter', 0) + 1
 
 
 if __name__ == '__main__':
     # ... (previous test code remains) ...
     print("\n--- Testing Game Tick (Simulated Loop) ---")
+    clear_game_data_log() # Clear log before new test run
     game = initialize_new_game()
+    # Add a game_id for testing logging
+    game.game_id = "test_game_tick_sim"
+    game._start_time_for_sim_elapsed = time.time() # For sim_time_elapsed in log
+
     start_new_round(game)
 
+
     # Simulate a game loop for a short duration
-    sim_duration = 15 # Simulate for 15 seconds
+    sim_duration = 5 # Simulate for 5 seconds to keep log small for review
     start_time = time.time()
     loop_count = 0
 
     # Simulate some player inputs over time
     # (In a real game, these would come from user interaction)
-    if sim_duration > 2: time.eval('PLAYER_ACTION_QUEUE.append(ActionType.JAB)',  globals={'PLAYER_ACTION_QUEUE': PLAYER_ACTION_QUEUE, 'ActionType': ActionType}, locals={}) # Incorrect use of time.eval
-    # Correct way for delayed actions in simulation:
-    # We'll just add them periodically in the loop for this test.
+    # For this test, let's queue a few actions upfront
+    queue_player_action_for_tick(ActionType.JAB)
+    # queue_player_action_for_tick(ActionType.CROSS) # Will be busy after jab
+    # queue_player_action_for_tick(ActionType.BLOCK)
+
 
     print(f"\nStarting {sim_duration}s simulation of game ticks...")
     game.last_tick_time = time.time() # Initialize last_tick_time before first tick
+    game.log_counter = 0 # For periodic logging within tick if desired
 
     while time.time() - start_time < sim_duration and game.match_status != GameStatus.MATCH_OVER:
         loop_count += 1
         # Simulate player input at intervals
-        if loop_count % 20 == 5: # Every ~2 seconds if tick is ~0.1s
-            queue_player_action_for_tick(ActionType.JAB)
-            print("*** Player queued JAB ***")
-        if loop_count % 30 == 0:
+        if loop_count == 15: # Approx 1.5s in
+            queue_player_action_for_tick(ActionType.CROSS)
+            # print("*** Player queued CROSS ***")
+        if loop_count == 25: # Approx 2.5s in
             queue_player_action_for_tick(ActionType.BLOCK)
-            print("*** Player queued BLOCK ***")
-        if loop_count % 50 == 0 and game.player.current_action == ActionType.BLOCK: # Unblock
+            # print("*** Player queued BLOCK ***")
+        if loop_count == 35 and game.player.current_action == ActionType.BLOCK: # Approx 3.5s in
              PLAYER_ACTION_QUEUE.append(ActionType.IDLE) # Crude way to stop blocking
-             print("*** Player queued IDLE (to stop block) ***")
+             # print("*** Player queued IDLE (to stop block) ***")
 
-
-        game_tick(game)
+        current_tick_start_time = time.time()
+        game_tick(game) # This will now have internal logging calls
 
         # Print summary less frequently to avoid flooding console
-        if loop_count % 10 == 0:
-             print(f"Tick {loop_count}: P_HP:{game.player.hp:.0f} P_SP:{game.player.stamina:.0f} ({game.player.current_action.value}) | "
-                   f"O_HP:{game.opponent.hp:.0f} O_SP:{game.opponent.stamina:.0f} ({game.opponent.current_action.value}) | "
-                   f"Timer: {game.round_timer:.1f}s | Knockdown: {game.knockdown_info['is_knockdown']} ({game.knockdown_info['count']:.1f})")
+        # if loop_count % 10 == 0: # Logging is now internal, this can be removed or kept for high-level summary
+        #      print(f"Sim Tick {loop_count}: P_HP:{game.player.hp:.0f} P_SP:{game.player.stamina:.0f} ({game.player.current_action.value}) | "
+        #            f"O_HP:{game.opponent.hp:.0f} O_SP:{game.opponent.stamina:.0f} ({game.opponent.current_action.value}) | "
+        #            f"Timer: {game.round_timer:.1f}s | Knockdown: {game.knockdown_info['is_knockdown']} ({game.knockdown_info['count']:.1f})")
 
-        time.sleep(0.1) # Simulate time passing between ticks
+        # Ensure tick processing doesn't take longer than tick interval for simulation stability
+        elapsed_tick_processing = time.time() - current_tick_start_time
+        sleep_duration = max(0, 0.1 - elapsed_tick_processing) # Target 0.1s tick interval
+        time.sleep(sleep_duration)
+
 
     print(f"\nSimulation ended after {time.time() - start_time:.2f}s and {loop_count} ticks.")
     print(f"Final Game Status: {game.match_status.value}")
     if game.winner:
-        print(f"Winner: {game.winner if isinstance(game.winner, str) else game.winner.value}")
+        print(f"Winner: {game.winner if isinstance(game.winner, str) else game.winner.value if game.winner else 'N/A'}")
     print(f"Player HP: {game.player.hp}, Stamina: {game.player.stamina}")
     print(f"Opponent HP: {game.opponent.hp}, Stamina: {game.opponent.stamina}")
+
+    # --- Output the collected game data log for review ---
+    print(f"\n--- Collected Game Data Log (last {min(5, len(GAME_DATA_LOG))} entries) ---")
+    for entry_idx, log_item in enumerate(get_game_data_log()[-5:]): # Print last 5 entries
+        print(f"Entry {len(get_game_data_log()) - min(5, len(GAME_DATA_LOG)) + entry_idx}:")
+        for key, value in log_item.items():
+            if isinstance(value, dict): # Print nested stats dicts more cleanly
+                print(f"  {key}:")
+                for sub_key, sub_value in value.items():
+                    print(f"    {sub_key}: {sub_value}")
+            else:
+                print(f"  {key}: {value}")
+    print(f"Total log entries: {len(GAME_DATA_LOG)}")
 
 
 # --- Helper for Deserialization (New for DynamoDB integration) ---
