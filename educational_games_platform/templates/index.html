@@ -8,5 +8,32 @@
 <body>
     <h1>Welcome to the Educational Games Platform!</h1>
     <p>Games that promote education, cultural understanding, human equality and rights, wellbeing, and the rights of all living beings.</p>
+
+    <h2>Latest from UNESCO</h2>
+    <ul>
+        {% for item in unesco_data %}
+            <li>{{ item.title }}</li>
+        {% else %}
+            <li>No data available from UNESCO.</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Latest from UNICEF</h2>
+    <ul>
+        {% for item in unicef_data %}
+            <li>{{ item.title }}</li>
+        {% else %}
+            <li>No data available from UNICEF.</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Latest from WHO</h2>
+    <ul>
+        {% for item in who_data %}
+            <li>{{ item.IndicatorName }}</li>
+        {% else %}
+            <li>No data available from WHO.</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
