@@ -8,6 +8,45 @@
 <body>
     <h1>Welcome to the Educational Games Platform!</h1>
     <p>Games that promote education, cultural understanding, human equality and rights, wellbeing, and the rights of all living beings.</p>
-    <a href="/map">View Map</a>
+
+    <h2>Generate an Image</h2>
+    <form id="image-form">
+        <label for="prompt">Enter a text prompt:</label><br>
+        <input type="text" id="prompt" name="prompt" size="50"><br><br>
+        <input type="submit" value="Generate Image">
+    </form>
+
+    <div id="image-container"></div>
+
+    <script>
+        document.getElementById('image-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const prompt = document.getElementById('prompt').value;
+            const imageContainer = document.getElementById('image-container');
+            imageContainer.innerHTML = 'Generating image...';
+
+            try {
+                const response = await fetch('/generate_image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error);
+                }
+
+                const data = await response.json();
+                const image_data = data.image_b64;
+                imageContainer.innerHTML = `<img src="data:image/png;base64,${image_data}" />`;
+
+            } catch (error) {
+                imageContainer.innerHTML = `Error: ${error.message}`;
+            }
+        });
+    </script>
 </body>
 </html>
