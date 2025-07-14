@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, jsonify
 import requests
 import os
 
@@ -8,12 +8,8 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-@app.route('/generate_image', methods=['POST'])
-def generate_image():
-    prompt = request.json.get('prompt')
-    if not prompt:
-        return jsonify({'error': 'Prompt is required'}), 400
-
+@app.route('/get_embedding')
+def get_embedding():
     api_key = os.environ.get("NVIDIA_API_KEY")
     if not api_key:
         return jsonify({'error': 'NVIDIA_API_KEY environment variable not set'}), 500
@@ -24,19 +20,12 @@ def generate_image():
     }
 
     payload = {
-        "text_prompts": [
-            {
-                "text": prompt,
-                "weight": 1
-            }
-        ],
-        "sampler": "K_DPM_2_ANCESTRAL",
-        "seed": 0,
-        "steps": 25
+        "input": "This is a sample text to get an embedding for.",
+        "model": "nvidia/embed-qa-4"
     }
 
     try:
-        response = requests.post("https://api.nvcf.nvidia.com/v2/nvcf/pexray/lama/4/maverick", headers=headers, json=payload)
+        response = requests.post("https://integration.api.nvidia.com/v1/embeddings", headers=headers, json=payload)
         response.raise_for_status()
         return jsonify(response.json())
     except requests.exceptions.RequestException as e:
