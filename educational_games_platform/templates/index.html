@@ -8,5 +8,14 @@
 <body>
     <h1>Welcome to the Educational Games Platform!</h1>
     <p>Games that promote education, cultural understanding, human equality and rights, wellbeing, and the rights of all living beings.</p>
+
+    <h2>Latest from the Ministry of Education of Togo</h2>
+    <ul>
+        {% for item in togo_education_data %}
+            <li><a href="{{ item.link }}">{{ item.title.rendered }}</a></li>
+        {% else %}
+            <li>No data available from the Ministry of Education of Togo.</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
