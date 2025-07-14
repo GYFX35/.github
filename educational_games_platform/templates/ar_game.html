@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>AR Game</title>
+    <meta name="description" content="A-Frame AR Game">
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script>
+        AFRAME.registerComponent('ar-hider-material', {
+            init: function () {
+                this.el.sceneEl.addEventListener('enter-vr', () => {
+                    if (this.el.sceneEl.is('ar-mode')) {
+                        this.el.setAttribute('material', 'shader: shadow; transparent: true; opacity: 0.4');
+                    }
+                });
+            }
+        });
+    </script>
+  </head>
+  <body>
+    <a-scene webxr="optionalFeatures: hit-test, dom-overlay; overlayElement: #ar-ui">
+        <!-- Reticle to indicate where the object will be placed -->
+        <a-entity id="reticle"
+            geometry="primitive: ring; radius-inner: 0.02; radius-outer: 0.03"
+            material="color: #999; shader: flat"
+            position="0 -1 -2"
+            visible="false"
+            ar-hit-test="target: #plane;">
+        </a-entity>
+
+        <!-- The object to be placed -->
+        <a-box id="object-to-place"
+            position="0 0.5 -3"
+            rotation="0 45 0"
+            color="#4CC3D9"
+            visible="false">
+        </a-box>
+
+        <!-- Ground plane for non-AR mode and to cast shadows -->
+        <a-plane id="plane"
+            position="0 0 -4"
+            rotation="-90 0 0"
+            width="10"
+            height="10"
+            ar-hider-material
+            shadow="receive: true">
+        </a-plane>
+
+        <a-sky color="#ECECEC"></a-sky>
+        <a-light type="ambient" color="#888"></a-light>
+        <a-light type="directional" intensity="0.5" position="1 1 0"></a-light>
+    </a-scene>
+
+    <div id="ar-ui">
+        <button id="place-button">Place Object</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sceneEl = document.querySelector('a-scene');
+            const reticle = document.querySelector('#reticle');
+            const objectToPlace = document.querySelector('#object-to-place');
+            const placeButton = document.querySelector('#place-button');
+
+            sceneEl.addEventListener('enter-vr', () => {
+                if (sceneEl.is('ar-mode')) {
+                    reticle.setAttribute('visible', true);
+                }
+            });
+
+            placeButton.addEventListener('click', () => {
+                const position = reticle.getAttribute('position');
+                objectToPlace.setAttribute('position', position);
+                objectToPlace.setAttribute('visible', true);
+            });
+        });
+    </script>
+  </body>
+</html>
