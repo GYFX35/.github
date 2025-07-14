@@ -4,33 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Educational Games Platform</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
 </head>
 <body>
     <h1>Welcome to the Educational Games Platform!</h1>
     <p>Games that promote education, cultural understanding, human equality and rights, wellbeing, and the rights of all living beings.</p>
-
-    <h2>NVIDIA Embedding:</h2>
-    <pre id="embedding-container">Loading...</pre>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            const embeddingContainer = document.getElementById('embedding-container');
-
-            try {
-                const response = await fetch('/get_embedding');
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error);
-                }
-
-                const data = await response.json();
-                embeddingContainer.textContent = JSON.stringify(data, null, 2);
-
-            } catch (error) {
-                embeddingContainer.textContent = `Error: ${error.message}`;
-            }
-        });
-    </script>
 </body>
 </html>
