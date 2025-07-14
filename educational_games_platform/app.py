@@ -12,6 +12,19 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
     points = db.Column(db.Integer, default=0)
+    badges = db.relationship('UserBadge', backref='user', lazy=True)
+
+class Badge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    description = db.Column(db.String(240), nullable=False)
+    icon = db.Column(db.String(120), nullable=False)
+
+class UserBadge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=False)
+    badge = db.relationship('Badge', backref='user_badges')
 
 @app.route('/')
 def index():
@@ -19,6 +32,7 @@ def index():
         user = User.query.get(session['user_id'])
         user.points += 1
         db.session.commit()
+        check_for_new_badges(user)
     return render_template('index.html')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -60,7 +74,36 @@ def logout():
     flash('You have been logged out.')
     return redirect(url_for('index'))
 
+def check_for_new_badges(user):
+    # Check for 10-point badge
+    if user.points >= 10 and not has_badge(user, '10-Point Club'):
+        award_badge(user, '10-Point Club')
+    # Check for 100-point badge
+    if user.points >= 100 and not has_badge(user, '100-Point Club'):
+        award_badge(user, '100-Point Club')
+
+def has_badge(user, badge_name):
+    return any(user_badge.badge.name == badge_name for user_badge in user.badges)
+
+def award_badge(user, badge_name):
+    badge = Badge.query.filter_by(name=badge_name).first()
+    if badge:
+        user_badge = UserBadge(user_id=user.id, badge_id=badge.id)
+        db.session.add(user_badge)
+        db.session.commit()
+        flash(f'Congratulations! You have earned the "{badge_name}" badge!')
+
+def create_badges():
+    with app.app_context():
+        if Badge.query.count() == 0:
+            badge1 = Badge(name='10-Point Club', description='Earned 10 points', icon='10-point-badge.png')
+            badge2 = Badge(name='100-Point Club', description='Earned 100 points', icon='100-point-badge.png')
+            db.session.add(badge1)
+            db.session.add(badge2)
+            db.session.commit()
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        create_badges()
     app.run(debug=True)
