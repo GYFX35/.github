@@ -9,13 +9,12 @@
     <h1>Welcome to the Educational Games Platform!</h1>
     <p>Games that promote education, cultural understanding, human equality and rights, wellbeing, and the rights of all living beings.</p>
 
-    <h2>Latest from the Ministry of Education of Togo</h2>
-    <ul>
-        {% for item in togo_education_data %}
-            <li><a href="{{ item.link }}">{{ item.title.rendered }}</a></li>
-        {% else %}
-            <li>No data available from the Ministry of Education of Togo.</li>
-        {% endfor %}
-    </ul>
+    <h2>National Endowment for the Humanities (NEH)</h2>
+    <p>The NEH provides grants for humanities projects. You can search their database of funded projects <a href="https://apps.neh.gov/publicquery/default.aspx">here</a>.</p>
+    <p><em>We are currently unable to connect to the NEH API.</em></p>
+
+    <h2>National Endowment for the Arts (NEA)</h2>
+    <p>The NEA funds, promotes, and strengthens the creative capacity of our communities. You can find more information on their website <a href="https://www.arts.gov/">here</a>.</p>
+    <p><em>We are currently unable to connect to the NEA API.</em></p>
 </body>
 </html>
