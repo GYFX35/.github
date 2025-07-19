@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Ads Optimization Dashboard - AI Marketer Agent{% endblock %}
+
+{% block content %}
+    <h1>Ads Optimization Dashboard</h1>
+
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('main.upload_ad_csv_route') }}" class="button-like">Upload Ad Campaign CSV</a>
+
+        {# Facebook Connection #}
+        {% if not session.get('fb_access_token') %}
+            <a href="{{ url_for('main.connect_facebook_fan') }}" class="button-like">Connect to Facebook Audience Network</a>
+        {% else %}
+            <span style="color: green; margin-right: 10px;">Connected to Facebook.</span>
+        {% endif %}
+
+        {# Google Ads Connection Button #}
+        {% if not google_ads_connected %}
+            <a href="{{ url_for('main.connect_google_ads') }}" class="button-like google-ads-button">Connect to Google Ads</a>
+        {% else %}
+            <span style="color: green;">Connected to Google Ads.</span>
+        {% endif %}
+    </div>
+    <hr style="margin-bottom: 20px;">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-bottom: 15px;">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {# Facebook Audience Network Section #}
+    <div class="data-section">
+        <h2>Facebook Audience Network (FAN)</h2>
+        {% if fb_error %}
+            <p class="alert alert-danger">Facebook API Error: {{ fb_error }}</p>
+        {% endif %}
+
+        {% if fb_connected %}
+            {# "Connected" message is now shown above, next to the connect button #}
+            <form method="POST" action="{{ url_for('main.ads_optimization') }}" style="margin-bottom: 15px;">
+                <input type="hidden" name="action" value="fetch_fan_data">
+                <button type="submit" class="button-like">Refresh FAN Data (Mock)</button>
+            </form>
+
+            {% if fan_placements %}
+                <h3>Mock Ad Placements</h3>
+                <ul>
+                {% for placement in fan_placements %}
+                    <li>{{ placement.name }} (ID: {{ placement.id }})</li>
+                {% else %}
+                    <li>No mock ad placements found.</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if fan_performance_data %}
+                <h3>Mock FAN Performance Data</h3>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Placement ID</th>
+                                <th>Placement Name</th>
+                                <th>Revenue ($)</th>
+                                <th>Impressions</th>
+                                <th>Clicks</th>
+                                <th>eCPM ($)</th>
+                                <th>Fill Rate (%)</th>
+                                <th>Date Info</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in fan_performance_data %}
+                            <tr>
+                                <td>{{ item.placement_id }}</td>
+                                <td>{{ item.placement_name }}</td>
+                                <td>{{ "%.2f" | format(item.revenue) }}</td>
+                                <td>{{ "{:,}".format(item.impressions) }}</td>
+                                <td>{{ "{:,}".format(item.clicks) }}</td>
+                                <td>{{ "%.2f" | format(item.ecpm) }}</td>
+                                <td>{{ "%.2f" | format(item.fill_rate * 100) }}%</td>
+                                <td>{{ item.date_preset_info }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% elif request.method == 'POST' and request.form.get('action') == 'fetch_fan_data' and not fb_error %}
+                <p>No performance data returned for mock placements.</p>
+            {% endif %}
+        {% elif not fb_error %} {# Only show this if not connected AND no overriding fb_error #}
+            <p>Not connected to Facebook Audience Network. Please connect to fetch data.</p>
+        {% endif %}
+    </div>
+    <hr style="margin-top: 20px; margin-bottom: 20px;">
+
+    {# Placeholder for Google Ads Data Section (to be populated in later steps) #}
+    <div class="data-section">
+        <h2>Google Ads</h2>
+        {% if google_ads_error %}
+             <p class="alert alert-danger">Google Ads API Error: {{ google_ads_error }}</p>
+        {% endif %}
+        {% if google_ads_connected %}
+            {# "Connected" message is shown near the button above #}
+            {# Button to refresh Google Ads data will go here #}
+            <p>Google Ads data display will be implemented here.</p>
+            {% if google_ads_customers %}
+                <h3>Accessible Google Ads Customers:</h3>
+                <ul>
+                {% for customer in google_ads_customers %}
+                    <li>{{ customer.descriptive_name }} (ID: {{ customer.customer_id }})</li>
+                {% else %}
+                    <li>No Google Ads customers found or fetched yet.</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% elif not google_ads_error %}
+             <p>Not connected to Google Ads. Please connect to fetch data.</p>
+        {% endif %}
+    </div>
+    <hr style="margin-top: 20px; margin-bottom: 20px;">
+
+
+    {% if ad_campaign_data %}
+        <h2>Summary Statistics (CSV Uploads)</h2>
+        {% set total_impressions = ad_campaign_data | sum(attribute='impressions') if ad_campaign_data and ad_campaign_data[0].impressions is not none else 'N/A' %}
+        {% set total_clicks = ad_campaign_data | sum(attribute='clicks') if ad_campaign_data and ad_campaign_data[0].clicks is not none else 'N/A' %}
+        {% set total_cost = ad_campaign_data | sum(attribute='cost') if ad_campaign_data and ad_campaign_data[0].cost is not none else 'N/A' %}
+        {% set total_conversions = ad_campaign_data | sum(attribute='conversions') if ad_campaign_data and ad_campaign_data[0].conversions is not none else 'N/A' %}
+
+        <p>
+            <strong>Total Impressions:</strong> {{ "{:,}".format(total_impressions) if total_impressions != 'N/A' else 'N/A' }}<br>
+            <strong>Total Clicks:</strong> {{ "{:,}".format(total_clicks) if total_clicks != 'N/A' else 'N/A' }}<br>
+            <strong>Total Cost:</strong> ${{ "{:,.2f}".format(total_cost) if total_cost != 'N/A' else 'N/A' }}<br>
+            <strong>Total Conversions:</strong> {{ "{:,}".format(total_conversions) if total_conversions != 'N/A' else 'N/A' }}<br>
+
+            {% if total_impressions != 'N/A' and total_impressions > 0 and total_clicks != 'N/A' and total_clicks is not none %}
+                <strong>Overall CTR:</strong> {{ "%.2f" | format((total_clicks / total_impressions) * 100) }}%
+            {% else %}
+                <strong>Overall CTR:</strong> N/A
+            {% endif %}<br>
+
+            {% if total_clicks != 'N/A' and total_clicks > 0 and total_cost != 'N/A' and total_cost is not none %}
+                <strong>Overall CPC:</strong> ${{ "%.2f" | format(total_cost / total_clicks) }}
+            {% else %}
+                <strong>Overall CPC:</strong> N/A
+            {% endif %}<br>
+
+            {% if total_conversions != 'N/A' and total_conversions > 0 and total_cost != 'N/A' and total_cost is not none %}
+                <strong>Overall CPA:</strong> ${{ "%.2f" | format(total_cost / total_conversions) }}
+            {% else %}
+                <strong>Overall CPA:</strong> N/A
+            {% endif %}
+        </p>
+
+        <h2>Top Performing Campaigns (by Conversions from CSV)</h2>
+        {% if ad_campaign_data %}
+            {% set sorted_campaigns = ad_campaign_data | sort(attribute='conversions', reverse=true) %}
+            <ul>
+                {% for record in sorted_campaigns[:5] %} {# Top 5 #}
+                    <li>
+                        {{ record.campaign_name }} ({{ record.platform if record.platform else 'N/A' }}):
+                        {{ "{:,}".format(record.conversions) if record.conversions is not none else '0' }} conversions
+                        {% if record.cpa is not none %} (CPA: ${{ "{:,.2f}".format(record.cpa) }}) {% endif %}
+                        {% if record.ctr is not none %} (CTR: {{ "%.2f" | format(record.ctr) }}%) {% endif %}
+                    </li>
+                {% else %}
+                    <li>No campaign data with conversions to display top performers.</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <li>No CSV data available for top performers.</li>
+        {% endif %}
+
+
+        <h2>All Uploaded Ad Campaign Data (CSV)</h2>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Report Date</th>
+                        <th>Campaign Name</th>
+                        <th>Platform</th>
+                        <th>Impressions</th>
+                        <th>Clicks</th>
+                        <th>Cost</th>
+                        <th>Conversions</th>
+                        <th>CTR (%)</th>
+                        <th>CPC ($)</th>
+                        <th>CPA ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in ad_campaign_data %}
+                    <tr>
+                        <td>{{ record.report_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ record.campaign_name }}</td>
+                        <td>{{ record.platform if record.platform else 'N/A' }}</td>
+                        <td>{{ "{:,}".format(record.impressions) if record.impressions is not none else 'N/A' }}</td>
+                        <td>{{ "{:,}".format(record.clicks) if record.clicks is not none else 'N/A' }}</td>
+                        <td>${{ "{:,.2f}".format(record.cost) if record.cost is not none else 'N/A' }}</td>
+                        <td>{{ "{:,}".format(record.conversions) if record.conversions is not none else 'N/A' }}</td>
+                        <td>{{ "%.2f" | format(record.ctr) if record.ctr is not none else 'N/A' }}</td>
+                        <td>{{ "%.2f" | format(record.cpc) if record.cpc is not none else 'N/A' }}</td>
+                        <td>{{ "%.2f" | format(record.cpa) if record.cpa is not none else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No ad campaign performance data uploaded via CSV yet. Please use the link above to upload a CSV file.</p>
+    {% endif %}
+
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
+        .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;}
+        .alert-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;}
+        .alert-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;}
+
+        .data-section {
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .data-section h2 { margin-top: 0;}
+        .data-section h3 { margin-top: 15px;}
+    </style>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Ad Campaign Performance CSV - AI Marketer Agent{% endblock %}
+
+{% block content %}
+    <h1>Upload Ad Campaign Performance CSV</h1>
+    <p>Please upload a CSV file with ad campaign performance data. Expected columns are:</p>
+    <ul>
+        <li><strong>report_date</strong> (YYYY-MM-DD) - Required</li>
+        <li><strong>campaign_name</strong> (Text) - Required</li>
+        <li><strong>platform</strong> (Text, optional, e.g., "Google Ads", "Facebook Ads")</li>
+        <li><strong>impressions</strong> (Integer, optional)</li>
+        <li><strong>clicks</strong> (Integer, optional)</li>
+        <li><strong>cost</strong> (Float, optional)</li>
+        <li><strong>conversions</strong> (Integer, optional)</li>
+        {# Add other relevant fields as comments if they might be common, e.g., revenue #}
+    </ul>
+    <p><em>Make sure the first row of your CSV contains these exact header names. Optional fields can be left blank.</em></p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" enctype="multipart/form-data">
+        <div>
+            <label for="file">Choose CSV File:</label>
+            <input type="file" id="file" name="file" accept=".csv" required>
+        </div>
+        <br>
+        <div>
+            <button type="submit">Upload Data</button>
+        </div>
+    </form>
+
+    {# Re-using styles from upload_affiliate_data.html for alerts. Consider moving to style.css if more widely used. #}
+    <style>
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+         .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+    </style>
+{% endblock %}

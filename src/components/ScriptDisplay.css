@@ -1,0 +1,47 @@
+.script-display-container {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.script-display-container h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.2em;
+  color: #555;
+}
+
+/* Styles for the ReactQuill component wrapper and its content area */
+.script-content-box {
+  /* This class is on the ReactQuill component itself (its wrapper div). */
+  /* The Snow theme (imported in ScriptDisplay.jsx) provides the main editor styling like borders and toolbar. */
+  margin-top: 5px; /* Optional: add a little space above the editor toolbar. */
+}
+
+/* Target Quill's classes directly for more specific control if needed. */
+/* These styles ensure the editor fits well within our container and is scrollable. */
+.script-content-box .ql-toolbar.ql-snow {
+  border-top-left-radius: 4px;    /* Match container's border radius */
+  border-top-right-radius: 4px;   /* Match container's border radius */
+  border-color: #ced4da;          /* A common bootstrap-like border color */
+}
+
+.script-content-box .ql-container.ql-snow {
+  min-height: 200px;              /* Minimum height for the editor content area */
+  max-height: 450px;              /* Maximum height before scrolling */
+  overflow-y: auto;               /* Add scrollbar if content exceeds max-height */
+  border-bottom-left-radius: 4px; /* Match container's border radius */
+  border-bottom-right-radius: 4px;/* Match container's border radius */
+  border-color: #ced4da;          /* Match toolbar border color */
+}
+
+.script-content-box .ql-editor {
+  /* This is the actual editable area */
+  font-family: Arial, sans-serif; /* Override default Quill font if desired */
+  font-size: 1rem;                /* Set a comfortable reading size */
+  line-height: 1.6;               /* Spacing for readability */
+  min-height: 180px;              /* Ensure editor area has some initial height inside the container */
+                                  /* Padding is handled by .ql-editor's defaults, usually 12px 15px */
+}

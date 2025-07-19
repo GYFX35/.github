@@ -1,88 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#2c3e50"> <!-- Corresponds to manifest theme_color -->
-    <title>AR Boxing Game</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <!-- Optional: Apple-specific meta tags for PWA-like behavior -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ARBox">
-    <!-- Optional: Link to a specific Apple touch icon if needed, though manifest icons are often used -->
-    <!-- <link rel="apple-touch-icon" href="icons/icon-192x192.png"> -->
-</head>
-<body>
-    <div class="game-container">
-        <h1>AR Boxing Game</h1>
-
-        <div class="match-info">
-            <p>Round: <span id="round-number">0</span> / <span id="max-rounds">3</span></p>
-            <p>Time: <span id="round-timer">90</span>s</p>
-            <p>Status: <span id="match-status">PENDING</span></p>
-            <p>Winner: <span id="match-winner">N/A</span></p>
-        </div>
-
-        <div class="fighters-container">
-            <div class="fighter-panel" id="player-panel">
-                <h2>Player (<span id="player-name">Player</span>)</h2>
-                <p>HP: <progress id="player-hp-bar" value="100" max="100"></progress> <span id="player-hp-text">100/100</span></p>
-                <p>Stamina: <progress id="player-stamina-bar" value="100" max="100"></progress> <span id="player-stamina-text">100/100</span></p>
-                <p>Action: <span id="player-current-action">IDLE</span></p>
-                <p>Scores: <span id="player-round-scores"></span></p>
-            </div>
-
-            <div class="fighter-panel" id="opponent-panel">
-                <h2>Opponent (<span id="opponent-name">Opponent</span>)</h2>
-                <p>HP: <progress id="opponent-hp-bar" value="100" max="100"></progress> <span id="opponent-hp-text">100/100</span></p>
-                <p>Stamina: <progress id="opponent-stamina-bar" value="100" max="100"></progress> <span id="opponent-stamina-text">100/100</span></p>
-                <p>Action: <span id="opponent-current-action">IDLE</span></p>
-                <p>Scores: <span id="opponent-round-scores"></span></p>
-            </div>
-        </div>
-
-        <div class="knockdown-info-panel">
-            <h3>Knockdown Status</h3>
-            <p>Active: <span id="knockdown-active">No</span></p>
-            <p>Fighter Down: <span id="knockdown-fighter">N/A</span></p>
-            <p>Count: <span id="knockdown-count">0</span>s</p>
-        </div>
-
-        <div class="actions-panel">
-            <h3>Player Actions</h3>
-            <button class="action-btn" data-action="JAB">Jab</button>
-            <button class="action-btn" data-action="CROSS">Cross</button>
-            <button class="action-btn" data-action="HOOK">Hook</button>
-            <button class="action-btn" data-action="UPPERCUT">Uppercut</button>
-            <button class="action-btn" data-action="BLOCK">Block</button>
-            <button class="action-btn" data-action="DODGE">Dodge</button>
-            <!-- Movement actions can be added later -->
-        </div>
-
-        <div class="controls-panel">
-            <button id="start-game-btn">Start New Game</button>
-            <button id="get-state-btn">Refresh Game State (Manual)</button>
-        </div>
-
-        <div class="event-log-panel">
-            <h3>Event Log (Last 10)</h3>
-            <ul id="event-log-list">
-                <li>Game events will appear here...</li>
-            </ul>
-        </div>
-
-        <div id="bottom-banner-ad-placeholder">
-            <!-- Ad content would be loaded here by an ad network -->
-        </div>
-
-    </div>
-
-    <!-- Interstitial Ad Placeholder (optional, usually managed by JS SDK) -->
-    <!-- <div id="interstitial-ad-placeholder" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); color:white; z-index:1000; text-align:center; padding-top:40vh;">Interstitial Ad Placeholder</div> -->
-
-
-    <script src="script.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <!-- PWA plugin will add manifest link here -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" /> <!-- Assuming a favicon exists or will be added to public -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>AI Video Content Generator</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/index.jsx"></script>
+  </body>
 </html>

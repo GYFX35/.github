@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Marketer Agent - Offline</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            background-color: #f4f4f4;
+            color: #333;
+            font-family: sans-serif;
+        }
+        .container {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #555;
+        }
+        p {
+            margin-bottom: 20px;
+        }
+        a.home-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        a.home-link:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>You are Offline</h1>
+        <p>It seems you're not connected to the internet right now.</p>
+        <p>Some features may be unavailable until you reconnect.</p>
+        <p>If you have previously visited pages, they might be available from the cache.</p>
+        <p><a href="{{ url_for('main.index') }}" class="home-link">Try Homepage</a></p>
+    </div>
+    {# This page should have minimal external dependencies if it's to be reliably served by SW when offline #}
+    {# The style.css link might fail if not cached by SW, hence some inline styles are also good #}
+</body>
+</html>

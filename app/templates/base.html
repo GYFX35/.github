@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Marketer Agent{% endblock %}</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+    <!-- Theme Color for PWA -->
+    <meta name="theme-color" content="#333333"> {# Should match manifest.json theme_color #}
+
+    <!-- iOS PWA specific tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> {# or default, black #}
+    <meta name="apple-mobile-web-app-title" content="AI Marketer"> {# Should match manifest.json short_name or name #}
+    {# Link to Apple touch icons (optional, but good practice) - these would be different from manifest icons #}
+    {# <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon-180x180.png') }}"> #}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('main.index') }}">Home</a></li>
+            <li><a href="{{ url_for('main.affiliate_marketing') }}">Affiliate Marketing</a></li>
+            <li><a href="{{ url_for('main.ads_optimization') }}">Ads Optimization</a></li>
+        </ul>
+    </nav>
+    <hr>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    <footer>
+        <hr>
+        <p>&copy; 2023 AI Marketer Inc. (Placeholder)</p>
+    </footer>
+
+    <script>
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          // Register sw.js served from the root path
+          navigator.serviceWorker.register("/sw.js", { scope: '/' })
+            .then((registration) => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch((error) => {
+              console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
+    </script>
+</body>
+</html>

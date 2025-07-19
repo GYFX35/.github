@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Affiliate Marketing Dashboard - AI Marketer Agent{% endblock %}
+
+{% block content %}
+    <h1>Affiliate Marketing Dashboard</h1>
+    <p><a href="{{ url_for('main.upload_affiliate_csv_route') }}">Upload New Affiliate Data CSV</a></p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                {# Assuming alert styles are in base.html or a global CSS, or defined here if specific #}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if affiliate_data %}
+        <h2>Summary Statistics</h2>
+        {% set total_clicks = affiliate_data | sum(attribute='clicks') if affiliate_data[0].clicks is not none else 'N/A' %}
+        {% set total_conversions = affiliate_data | sum(attribute='conversions') if affiliate_data[0].conversions is not none else 'N/A' %}
+        {% set total_commission = affiliate_data | sum(attribute='commission_amount') if affiliate_data[0].commission_amount is not none else 'N/A' %}
+
+        <p>
+            <strong>Total Clicks:</strong> {{ "{:,}".format(total_clicks) if total_clicks != 'N/A' else 'N/A' }}<br>
+            <strong>Total Conversions:</strong> {{ "{:,}".format(total_conversions) if total_conversions != 'N/A' else 'N/A' }}<br>
+            <strong>Total Commission:</strong> ${{ "{:,.2f}".format(total_commission) if total_commission != 'N/A' else 'N/A' }}<br>
+            {% if total_clicks != 'N/A' and total_clicks > 0 and total_commission != 'N/A' %}
+                <strong>Overall EPC:</strong> ${{ "{:,.2f}".format(total_commission / total_clicks) }}
+            {% else %}
+                <strong>Overall EPC:</strong> N/A
+            {% endif %}
+        </p>
+
+        <h2>Top Performing Affiliates (by Commission)</h2>
+        {# Sort affiliates by commission_amount. Handles None by treating them as 0 for sorting. #}
+        {% set sorted_affiliates = affiliate_data | sort(attribute='commission_amount', reverse=true) %}
+        <ul>
+            {% for record in sorted_affiliates[:5] %} {# Top 5 #}
+                <li>
+                    {{ record.affiliate_name }}:
+                    ${{ "{:,.2f}".format(record.commission_amount) if record.commission_amount is not none else '0.00' }} commission
+                    {% if record.epc is not none %} (EPC: ${{ "{:,.2f}".format(record.epc) }}) {% endif %}
+                </li>
+            {% else %}
+                <li>No affiliate data with commission to display top performers.</li>
+            {% endfor %}
+        </ul>
+
+        <h2>All Uploaded Affiliate Data</h2>
+        <div style="overflow-x:auto;"> {# For responsiveness on small screens #}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Report Date</th>
+                        <th>Affiliate Name</th>
+                        <th>Impressions</th>
+                        <th>Clicks</th>
+                        <th>Conversions</th>
+                        <th>Commission Amount</th>
+                        <th>EPC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in affiliate_data %}
+                    <tr>
+                        <td>{{ record.report_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ record.affiliate_name }}</td>
+                        <td>{{ "{:,}".format(record.impressions) if record.impressions is not none else 'N/A' }}</td>
+                        <td>{{ "{:,}".format(record.clicks) if record.clicks is not none else 'N/A' }}</td>
+                        <td>{{ "{:,}".format(record.conversions) if record.conversions is not none else 'N/A' }}</td>
+                        <td>${{ "{:,.2f}".format(record.commission_amount) if record.commission_amount is not none else 'N/A' }}</td>
+                        <td>${{ "{:,.2f}".format(record.epc) if record.epc is not none else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No affiliate performance data uploaded yet. Please use the link above to upload a CSV file.</p>
+    {% endif %}
+
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .alert { /* Basic styling for flashed messages, if not globally available */
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
+        .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;}
+        .alert-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;}
+    </style>
+{% endblock %}
