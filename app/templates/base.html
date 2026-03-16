@@ -3,46 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AI Marketer Agent{% endblock %}</title>
+    <title>{% block title %}AI Nexus - Empowering Your Marketing with AI{% endblock %}</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
 
     <!-- Theme Color for PWA -->
-    <meta name="theme-color" content="#333333"> {# Should match manifest.json theme_color #}
+    <meta name="theme-color" content="#111827">
 
     <!-- iOS PWA specific tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> {# or default, black #}
-    <meta name="apple-mobile-web-app-title" content="AI Marketer"> {# Should match manifest.json short_name or name #}
-    {# Link to Apple touch icons (optional, but good practice) - these would be different from manifest icons #}
-    {# <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon-180x180.png') }}"> #}
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AI Nexus">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <nav>
+        <a href="{{ url_for('main.index') }}" class="nav-logo">
+            AI<span>Nexus</span>
+        </a>
         <ul>
             <li><a href="{{ url_for('main.index') }}">Home</a></li>
             <li><a href="{{ url_for('main.affiliate_marketing') }}">Affiliate Marketing</a></li>
             <li><a href="{{ url_for('main.ads_optimization') }}">Ads Optimization</a></li>
         </ul>
     </nav>
-    <hr>
+
     <main>
         {% block content %}
         {% endblock %}
     </main>
+
     <footer>
-        <hr>
-        <p>&copy; 2023 AI Marketer Inc. (Placeholder)</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>AI Nexus</h4>
+                <p>Leading the way in AI-powered marketing optimization and content generation.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="{{ url_for('main.index') }}">Home</a></li>
+                    <li><a href="{{ url_for('main.affiliate_marketing') }}">Affiliate Marketing</a></li>
+                    <li><a href="{{ url_for('main.ads_optimization') }}">Ads Optimization</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>Email: info@ainexus.example.com</p>
+                <p>Phone: +1 (555) 123-4567</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 AI Nexus Inc. All rights reserved.</p>
+        </div>
     </footer>
 
     <script>
       // Register Service Worker
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          // Register sw.js served from the root path
           navigator.serviceWorker.register("/sw.js", { scope: '/' })
             .then((registration) => {
               console.log('ServiceWorker registration successful with scope: ', registration.scope);

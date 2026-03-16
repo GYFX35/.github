@@ -1,9 +1,41 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - AI Marketer Agent{% endblock %}
+{% block title %}AI Nexus - AI-Powered Marketing Optimization{% endblock %}
 
 {% block content %}
-    <h1>Welcome to the AI Marketer Agent!</h1>
-    <p>This tool helps you optimize your affiliate marketing and advertising campaigns.</p>
-    <p>Navigate using the links above to access different sections.</p>
+    <section class="hero">
+        <h1>Welcome to AI Nexus</h1>
+        <p>The all-in-one platform for optimizing your affiliate marketing campaigns and generating high-impact educational video content with the power of Artificial Intelligence.</p>
+        <a href="{{ url_for('main.ads_optimization') }}" class="cta-button">Get Started with Ads Optimization</a>
+    </section>
+
+    <section class="features">
+        <h2 style="text-align: center; margin-bottom: 2.5rem; font-size: 2.5rem;">Our Solutions</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>Affiliate Marketing Optimization</h3>
+                <p>Identify top-performing affiliates, track conversion rates, and optimize commission structures automatically. Data-driven insights to maximize your ROI.</p>
+                <a href="{{ url_for('main.affiliate_marketing') }}" class="button-like" style="margin-top: 1rem;">Explore Affiliate Tools</a>
+            </div>
+            <div class="feature-card">
+                <h3>Ads & Campaign Optimization</h3>
+                <p>Seamlessly integrate with Google Ads and Facebook Audience Network. Use AI to analyze performance and get targeted recommendations for bid management and audience segmentation.</p>
+                <a href="{{ url_for('main.ads_optimization') }}" class="button-like" style="margin-top: 1rem;">Optimize Your Ads</a>
+            </div>
+            <div class="feature-card">
+                <h3>AI Video Content Generator</h3>
+                <p>Create engaging educational video scripts in seconds. Our AI understands your topic and generates structured, ready-to-produce scripts with visual descriptions and narration.</p>
+                <p style="margin-top: 1rem; font-style: italic; color: var(--text-light);">(Integrated tool - coming soon to dashboard)</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="vision" style="padding: 4rem 1rem; text-align: center; background-color: white; border-radius: 1rem; margin-top: 2rem;">
+        <h2 style="margin-bottom: 1.5rem;">Our Vision</h2>
+        <p style="max-width: 800px; margin: 0 auto; font-size: 1.1rem; color: var(--text-light);">
+            At AI Nexus, we believe that advanced AI tools should be accessible to every marketer and content creator.
+            Our mission is to bridge the gap between complex data analysis and actionable growth strategies,
+            allowing you to focus on what matters most: creativity and connection.
+        </p>
+    </section>
 {% endblock %}
