@@ -92,7 +92,7 @@ class CloudServiceData:
     uptime: float      # percentage
     usage_metric: str  # e.g., "CPU Utilization", "Active Users", "Requests/min"
     usage_value: float
-    ai_optimization_score: Optional[float] = None # Score from 0-100 indicating AI-driven efficiency
+    ai_optimization_score: float = 0.0 # Score from 0-100 indicating AI-driven efficiency
 
 # For Phase 1, we'll manage lists of these objects globally or within app context.
 # Example:

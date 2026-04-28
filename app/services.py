@@ -346,22 +346,38 @@ def get_mock_cloud_service_data() -> List[CloudServiceData]:
         )
     ]
 
+# Configuration for AI cloud recommendations: (threshold, priority, message_template)
+# Thresholds are checked in ascending order; first match applies.
+CLOUD_REC_CONFIG = [
+    {
+        "threshold": 80,
+        "priority": "High",
+        "template": "Optimize {service_type} usage on {provider} to reduce costs. Current score is {score}%."
+    },
+    {
+        "threshold": 90,
+        "priority": "Medium",
+        "template": "Monitor {service_name} for potential scaling opportunities. Current score is {score}%."
+    }
+]
+
 def get_ai_cloud_recommendations(service_data: List[CloudServiceData]) -> List[Dict[str, str]]:
     """Generates AI-driven recommendations based on cloud service data."""
     recommendations = []
     for service in service_data:
-        if service.ai_optimization_score < 80:
-            recommendations.append({
-                "service_name": service.service_name,
-                "recommendation": f"Optimize {service.service_type} usage on {service.provider} to reduce costs. Current score is {service.ai_optimization_score}%.",
-                "priority": "High"
-            })
-        elif service.ai_optimization_score < 90:
-             recommendations.append({
-                "service_name": service.service_name,
-                "recommendation": f"Monitor {service.service_name} for potential scaling opportunities. Current score is {service.ai_optimization_score}%.",
-                "priority": "Medium"
-            })
+        for config in CLOUD_REC_CONFIG:
+            if service.ai_optimization_score < config["threshold"]:
+                recommendations.append({
+                    "service_name": service.service_name,
+                    "recommendation": config["template"].format(
+                        service_type=service.service_type,
+                        provider=service.provider,
+                        service_name=service.service_name,
+                        score=service.ai_optimization_score
+                    ),
+                    "priority": config["priority"]
+                })
+                break
     return recommendations
 
 # --- End of Cloud Optimization Service Functions ---
