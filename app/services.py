@@ -6,7 +6,7 @@ from flask import current_app, session # Added session for Facebook token access
 import random # For mock data for Facebook
 
 # App-specific models
-from .models import AffiliatePerformanceData, AdCampaignPerformanceData
+from .models import AffiliatePerformanceData, AdCampaignPerformanceData, CloudServiceData
 
 # Facebook Business SDK imports
 from facebook_business.api import FacebookAdsApi
@@ -293,3 +293,75 @@ def list_accessible_google_ads_customers(client: GoogleAdsClient) -> List[Dict[s
 
 
 # --- End of Google Ads Service Functions ---
+
+# --- Cloud Optimization Service Functions ---
+
+def get_mock_cloud_service_data() -> List[CloudServiceData]:
+    """Generates mock data for Cloud Services (IaaS, PaaS, SaaS, ITaaS)."""
+    current_date = datetime.now().date()
+    return [
+        CloudServiceData(
+            service_name="AWS EC2 Clusters",
+            service_type="IaaS",
+            provider="AWS",
+            report_date=current_date,
+            cost=1250.00,
+            uptime=99.98,
+            usage_metric="CPU Utilization",
+            usage_value=65.5,
+            ai_optimization_score=85.0
+        ),
+        CloudServiceData(
+            service_name="Google App Engine",
+            service_type="PaaS",
+            provider="GCP",
+            report_date=current_date,
+            cost=450.00,
+            uptime=99.99,
+            usage_metric="Requests/min",
+            usage_value=1200.0,
+            ai_optimization_score=92.5
+        ),
+        CloudServiceData(
+            service_name="Salesforce CRM",
+            service_type="SaaS",
+            provider="Salesforce",
+            report_date=current_date,
+            cost=2100.00,
+            uptime=99.95,
+            usage_metric="Active Users",
+            usage_value=150.0,
+            ai_optimization_score=78.0
+        ),
+        CloudServiceData(
+            service_name="Managed IT Support",
+            service_type="ITaaS",
+            provider="Internal/Managed",
+            report_date=current_date,
+            cost=5000.00,
+            uptime=100.0,
+            usage_metric="Tickets Resolved",
+            usage_value=45.0,
+            ai_optimization_score=88.0
+        )
+    ]
+
+def get_ai_cloud_recommendations(service_data: List[CloudServiceData]) -> List[Dict[str, str]]:
+    """Generates AI-driven recommendations based on cloud service data."""
+    recommendations = []
+    for service in service_data:
+        if service.ai_optimization_score < 80:
+            recommendations.append({
+                "service_name": service.service_name,
+                "recommendation": f"Optimize {service.service_type} usage on {service.provider} to reduce costs. Current score is {service.ai_optimization_score}%.",
+                "priority": "High"
+            })
+        elif service.ai_optimization_score < 90:
+             recommendations.append({
+                "service_name": service.service_name,
+                "recommendation": f"Monitor {service.service_name} for potential scaling opportunities. Current score is {service.ai_optimization_score}%.",
+                "priority": "Medium"
+            })
+    return recommendations
+
+# --- End of Cloud Optimization Service Functions ---

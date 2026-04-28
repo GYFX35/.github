@@ -28,6 +28,7 @@ def create_app(test_config=None):
     # In-memory data stores for MVP
     app.affiliate_data_store = []
     app.ad_campaign_data_store = []
+    app.cloud_service_data_store = []
 
     # Register blueprints
     from .routes import main_bp

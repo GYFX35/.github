@@ -81,8 +81,22 @@ class AdCampaignPerformanceData:
     #         return round(self.revenue / self.cost, 2)
     #     return None
 
+@dataclass
+class CloudServiceData:
+    """Represents performance and cost data for Cloud Services (IaaS, PaaS, SaaS, ITaaS)."""
+    service_name: str
+    service_type: str  # IaaS, PaaS, SaaS, ITaaS
+    provider: str      # e.g., AWS, Azure, GCP, Salesforce
+    report_date: date
+    cost: float
+    uptime: float      # percentage
+    usage_metric: str  # e.g., "CPU Utilization", "Active Users", "Requests/min"
+    usage_value: float
+    ai_optimization_score: Optional[float] = None # Score from 0-100 indicating AI-driven efficiency
+
 # For Phase 1, we'll manage lists of these objects globally or within app context.
 # Example:
 # affiliate_data_store: List[AffiliatePerformanceData] = []
 # ad_campaign_data_store: List[AdCampaignPerformanceData] = []
+# cloud_service_data_store: List[CloudServiceData] = []
 # These actual store initializations will be handled in the main app or service layer.

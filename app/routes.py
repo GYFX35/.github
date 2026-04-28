@@ -13,7 +13,8 @@ import uuid
 from .services import (
     parse_affiliate_csv, parse_ad_campaign_csv,
     initialize_fb_api, get_fan_ad_placements_mock, get_fan_performance_data_mock,
-    get_google_ads_client, list_accessible_google_ads_customers # Added Google Ads services
+    get_google_ads_client, list_accessible_google_ads_customers, # Added Google Ads services
+    get_mock_cloud_service_data, get_ai_cloud_recommendations # Added Cloud Optimization services
 )
 # Note: GoogleAdsException is handled in services.py, not directly in routes typically
 
@@ -28,6 +29,20 @@ def index():
 def affiliate_marketing():
     """Serves the affiliate marketing placeholder page."""
     return render_template('affiliate_marketing.html', affiliate_data=current_app.affiliate_data_store)
+
+@main_bp.route('/cloud-optimization')
+def cloud_optimization():
+    """Serves the cloud optimization page."""
+    if not current_app.cloud_service_data_store:
+        current_app.cloud_service_data_store = get_mock_cloud_service_data()
+
+    recommendations = get_ai_cloud_recommendations(current_app.cloud_service_data_store)
+
+    return render_template(
+        'cloud_optimization.html',
+        cloud_data=current_app.cloud_service_data_store,
+        recommendations=recommendations
+    )
 
 @main_bp.route('/ads-optimization', methods=['GET', 'POST'])
 def ads_optimization():
