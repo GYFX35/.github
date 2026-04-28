@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Cloud Optimization - AI Nexus{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>Cloud Services Optimization</h1>
+    <p>Enhance your AI tools with IaaS, PaaS, SaaS, and ITaaS capacities.</p>
+</div>
+
+<section class="data-section" style="margin-top: 2rem;">
+    <h2>Cloud Service Performance</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>Type</th>
+                    <th>Provider</th>
+                    <th>Cost</th>
+                    <th>Uptime</th>
+                    <th>Usage Metric</th>
+                    <th>AI Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in cloud_data %}
+                <tr>
+                    <td>{{ service.service_name }}</td>
+                    <td><span class="badge">{{ service.service_type }}</span></td>
+                    <td>{{ service.provider }}</td>
+                    <td>${{ "%.2f"|format(service.cost) }}</td>
+                    <td>{{ service.uptime }}%</td>
+                    <td>{{ service.usage_value }} ({{ service.usage_metric }})</td>
+                    <td>
+                        <div class="score-pill {% if service.ai_optimization_score >= 90 %}score-high{% elif service.ai_optimization_score >= 80 %}score-med{% else %}score-low{% endif %}">
+                            {{ service.ai_optimization_score }}%
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="recommendations-section" style="margin-top: 3rem;">
+    <h2 style="margin-bottom: 1.5rem;">AI-Driven Recommendations</h2>
+    <div class="recommendations-grid">
+        {% for rec in recommendations %}
+        <div class="recommendation-card priority-{{ rec.priority|lower }}">
+            <div class="rec-header">
+                <span class="priority-badge">{{ rec.priority }} Priority</span>
+                <h3>{{ rec.service_name }}</h3>
+            </div>
+            <p>{{ rec.recommendation }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
