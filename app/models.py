@@ -2,9 +2,9 @@
 # For Phase 1, we are using simple Python classes and in-memory storage.
 # In later phases, these could be SQLAlchemy models or similar for database persistence.
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date
-from typing import Optional, List
+from typing import Optional
 
 # In-memory storage for Phase 1
 # These will be lists of dataclass instances.
@@ -22,9 +22,11 @@ from typing import Optional, List
 # It's better to initialize these in app.py or a service layer.
 # For now, just defining the models.
 
+
 @dataclass
 class AffiliatePerformanceData:
     """Represents performance data for an affiliate for a specific period."""
+
     report_date: date
     affiliate_name: str
     impressions: Optional[int] = None
@@ -39,12 +41,14 @@ class AffiliatePerformanceData:
             return round(self.commission_amount / self.clicks, 2)
         return None
 
+
 @dataclass
 class AdCampaignPerformanceData:
     """Represents performance data for an ad campaign for a specific period."""
+
     report_date: date
     campaign_name: str
-    platform: Optional[str] = None # e.g., Google Ads, Facebook Ads
+    platform: Optional[str] = None  # e.g., Google Ads, Facebook Ads
     impressions: Optional[int] = None
     clicks: Optional[int] = None
     cost: Optional[float] = None
@@ -81,18 +85,23 @@ class AdCampaignPerformanceData:
     #         return round(self.revenue / self.cost, 2)
     #     return None
 
+
 @dataclass
 class CloudServiceData:
     """Represents performance and cost data for Cloud Services (IaaS, PaaS, SaaS, ITaaS)."""
+
     service_name: str
     service_type: str  # IaaS, PaaS, SaaS, ITaaS
-    provider: str      # e.g., AWS, Azure, GCP, Salesforce
+    provider: str  # e.g., AWS, Azure, GCP, Salesforce
     report_date: date
     cost: float
-    uptime: float      # percentage
+    uptime: float  # percentage
     usage_metric: str  # e.g., "CPU Utilization", "Active Users", "Requests/min"
     usage_value: float
-    ai_optimization_score: Optional[float] = None # Score from 0-100 indicating AI-driven efficiency
+    ai_optimization_score: Optional[float] = (
+        None  # Score from 0-100 indicating AI-driven efficiency
+    )
+
 
 # For Phase 1, we'll manage lists of these objects globally or within app context.
 # Example:
