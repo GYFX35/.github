@@ -13,12 +13,12 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'], // Cache these file types
         runtimeCaching: [ // Example: Cache API calls (if any) - adjust as needed
           {
-            urlPattern: /^https:\/\/api\.openai\.com\/.*/,
+            urlPattern: /^\/api\/.*/,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'openai-api-cache',
+              cacheName: 'internal-api-cache',
               expiration: {
-                maxEntries: 10,
+                maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 * 1 // 1 day
               },
               cacheableResponse: {

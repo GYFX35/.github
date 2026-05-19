@@ -1,22 +1,11 @@
 // AI Service for generating video scripts
 
-// IMPORTANT: API Key Management
-// In a production environment, never expose your API key in frontend code.
-// This key should be stored securely, typically in a backend environment variable,
-// and your frontend should make requests to your backend, which then calls the AI API.
-// For Vite, you can use .env files and import.meta.env.VITE_OPENAI_API_KEY
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
-const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'; // Or your preferred compatible endpoint
+// AI Service for generating video scripts via Backend Proxy (Gemini 3.5 Flash)
 
-const MOCK_SCRIPT_ENABLED = !OPENAI_API_KEY;
+const BACKEND_AI_PROXY_URL = '/api/generate-script';
 
-// Function to generate a script using an AI model
+// Function to generate a script using an AI model via backend proxy
 export async function generateScript(topic) {
-  if (MOCK_SCRIPT_ENABLED) {
-    console.warn("OpenAI API key not found. Returning mock script.");
-    return generateMockScript(topic);
-  }
-
   const prompt = `
     You are an expert educational content creator.
     Generate a script for an engaging short educational video (around 2-3 minutes) on the topic: "${topic}".
@@ -32,36 +21,34 @@ export async function generateScript(topic) {
   `;
 
   try {
-    const response = await fetch(OPENAI_API_URL, {
+    const response = await fetch(BACKEND_AI_PROXY_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo', // Or another model like gpt-4 if available
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7, // Adjust for creativity vs. factuality
-        max_tokens: 1000, // Adjust as needed for script length
+        prompt: prompt,
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('OpenAI API Error:', errorData);
-      throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
+      console.error('AI Proxy Error:', errorData);
+      throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData.error || 'Unknown error'}`);
     }
 
     const data = await response.json();
-    if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-      return data.choices[0].message.content.trim();
+    if (data.response) {
+      return data.response.trim();
     } else {
-      console.error('Invalid response structure from OpenAI API:', data);
+      console.error('Invalid response structure from AI Proxy:', data);
       throw new Error('Failed to parse script from API response.');
     }
   } catch (error) {
     console.error('Error generating script:', error);
-    throw error; // Re-throw to be caught by the caller
+    // Fallback to mock for development if backend fails or is not reachable
+    console.warn("Falling back to mock script due to error.");
+    return generateMockScript(topic);
   }
 }
 

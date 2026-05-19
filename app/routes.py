@@ -14,7 +14,8 @@ from .services import (
     parse_affiliate_csv, parse_ad_campaign_csv,
     initialize_fb_api, get_fan_ad_placements_mock, get_fan_performance_data_mock,
     get_google_ads_client, list_accessible_google_ads_customers, # Added Google Ads services
-    get_mock_cloud_service_data, get_ai_cloud_recommendations # Added Cloud Optimization services
+    get_mock_cloud_service_data, get_ai_cloud_recommendations, # Added Cloud Optimization services
+    generate_content_with_gemini
 )
 # Note: GoogleAdsException is handled in services.py, not directly in routes typically
 
@@ -246,6 +247,21 @@ def google_ads_oauth_callback():
 # ... (PWA routes - offline_page, service_worker - remain unchanged)
 @main_bp.route('/offline.html')
 def offline_page(): return render_template('offline.html')
+
+@main_bp.route('/api/generate-script', methods=['POST'])
+def generate_script_proxy():
+    """Proxy route to generate scripts using Gemini AI."""
+    data = request.get_json()
+    if not data or 'prompt' not in data:
+        return {"error": "Missing prompt in request body"}, 400
+
+    prompt = data['prompt']
+    try:
+        content = generate_content_with_gemini(prompt)
+        return {"response": content}, 200
+    except Exception as e:
+        current_app.logger.error(f"Error in generate_script_proxy: {e}")
+        return {"error": str(e)}, 500
 
 @main_bp.route('/sw.js')
 def service_worker(): return current_app.send_static_file('sw.js'), 200, {'Content-Type': 'application/javascript'}
