@@ -16,6 +16,7 @@ def create_app(test_config=None):
         GOOGLE_ADS_CLIENT_SECRET='YOUR_GOOGLE_ADS_CLIENT_SECRET',
         GOOGLE_ADS_DEVELOPER_TOKEN='YOUR_DEVELOPER_TOKEN',
         GOOGLE_ADS_REDIRECT_URI='http://localhost:5000/google_ads_oauth_callback',
+        GOOGLE_API_KEY='YOUR_GOOGLE_API_KEY',
     )
 
     if test_config is None:

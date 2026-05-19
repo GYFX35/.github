@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Tuple, Optional
 from flask import current_app, session # Added session for Facebook token access
 import random # For mock data for Facebook
+import google.generativeai as genai
 
 # App-specific models
 from .models import AffiliatePerformanceData, AdCampaignPerformanceData, CloudServiceData
@@ -294,6 +295,36 @@ def list_accessible_google_ads_customers(client: GoogleAdsClient) -> List[Dict[s
 
 # --- End of Google Ads Service Functions ---
 
+# --- Gemini AI Service Functions ---
+
+def generate_content_with_gemini(prompt: str) -> str:
+    """Generates content using Google's Gemini 3.5 Flash model."""
+    api_key = current_app.config.get('GOOGLE_API_KEY')
+    if not api_key or 'YOUR_GOOGLE_API_KEY' in api_key:
+        current_app.logger.warning("Gemini API key not configured. Returning mock response.")
+        return f"Mock Gemini response for: {prompt[:50]}..."
+
+    try:
+        genai.configure(api_key=api_key)
+        # Using gemini-1.5-flash as gemini-3.5-flash might not be the exact identifier yet,
+        # but the prompt specifically asked for 3.5 flash.
+        # Based on search results, gemini-3.5-flash is being rolled out.
+        model = genai.GenerativeModel('gemini-1.5-flash') # Default to 1.5 if 3.5 is not yet in GA
+
+        # Try to use 3.5 flash if it's likely available or requested
+        try:
+            model_35 = genai.GenerativeModel('gemini-3.5-flash')
+            response = model_35.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            current_app.logger.info(f"Gemini 3.5 Flash not available, falling back to 1.5 Flash: {e}")
+            response = model.generate_content(prompt)
+            return response.text
+
+    except Exception as e:
+        current_app.logger.error(f"Error calling Gemini API: {e}")
+        return f"Error: Could not generate content with Gemini. {str(e)}"
+
 # --- Cloud Optimization Service Functions ---
 
 def get_mock_cloud_service_data() -> List[CloudServiceData]:
@@ -361,9 +392,28 @@ CLOUD_REC_CONFIG = [
     }
 ]
 
-def get_ai_cloud_recommendations(service_data: List[CloudServiceData]) -> List[Dict[str, str]]:
+import json
+
+def get_ai_cloud_recommendations(service_data: List[CloudServiceData], use_gemini: bool = False) -> List[Dict[str, str]]:
     """Generates AI-driven recommendations based on cloud service data."""
     recommendations = []
+
+    if use_gemini:
+        prompt = "Analyze the following cloud service data and provide optimization recommendations as a JSON list of objects with 'service_name', 'recommendation', and 'priority' keys (priority must be 'High', 'Medium', or 'Low'). Only return the JSON list, no other text:\n"
+        for service in service_data:
+            prompt += f"- {service.service_name} ({service.provider}): Cost ${service.cost}, Uptime {service.uptime}%, {service.usage_metric} {service.usage_value}, AI Score {service.ai_optimization_score}\n"
+
+        try:
+            current_app.logger.info("Requesting Gemini for cloud recommendations")
+            gemini_resp = generate_content_with_gemini(prompt)
+            # Basic attempt to parse JSON from AI response
+            if '[' in gemini_resp and ']' in gemini_resp:
+                json_str = gemini_resp[gemini_resp.find('['):gemini_resp.rfind(']')+1]
+                recommendations = json.loads(json_str)
+                return recommendations
+        except Exception as e:
+            current_app.logger.error(f"Failed to parse Gemini recommendations: {e}")
+
     for service in service_data:
         for config in CLOUD_REC_CONFIG:
             if service.ai_optimization_score < config["threshold"]:
