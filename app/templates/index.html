@@ -6,7 +6,10 @@
     <section class="hero">
         <h1>Welcome to AI Nexus</h1>
         <p>The all-in-one platform for optimizing your affiliate marketing campaigns and generating high-impact educational video content with the power of Artificial Intelligence.</p>
-        <a href="{{ url_for('main.ads_optimization') }}" class="cta-button">Get Started with Ads Optimization</a>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <a href="{{ url_for('main.ads_optimization') }}" class="cta-button">Ads Optimization</a>
+            <a href="{{ url_for('main.business_chimp') }}" class="cta-button" style="background-color: #f59e0b;">Meet the Business Chimp</a>
+        </div>
     </section>
 
     <section class="features">
@@ -21,6 +24,11 @@
                 <h3>Ads & Campaign Optimization</h3>
                 <p>Seamlessly integrate with Google Ads and Facebook Audience Network. Use AI to analyze performance and get targeted recommendations for bid management and audience segmentation.</p>
                 <a href="{{ url_for('main.ads_optimization') }}" class="button-like" style="margin-top: 1rem;">Optimize Your Ads</a>
+            </div>
+            <div class="feature-card">
+                <h3>Business Chimp AI</h3>
+                <p>Connect Mailchimp for deep campaign insights and use our specialized 'Business Chimp' AI persona to generate high-converting marketing copy and email content.</p>
+                <a href="{{ url_for('main.business_chimp') }}" class="button-like" style="margin-top: 1rem;">Talk to the Chimp</a>
             </div>
             <div class="feature-card">
                 <h3>Cloud Services Optimization</h3>

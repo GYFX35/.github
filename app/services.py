@@ -10,7 +10,7 @@ import io
 from PIL import Image
 
 # App-specific models
-from .models import AffiliatePerformanceData, AdCampaignPerformanceData, CloudServiceData
+from .models import AffiliatePerformanceData, AdCampaignPerformanceData, CloudServiceData, MailchimpData
 
 # Facebook Business SDK imports
 from facebook_business.api import FacebookAdsApi
@@ -21,6 +21,10 @@ from facebook_business.exceptions import FacebookRequestError
 # Google Ads SDK imports
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.errors import GoogleAdsException
+
+# Mailchimp Marketing SDK imports
+import mailchimp_marketing as MailchimpMarketing
+from mailchimp_marketing.api_client import ApiClientError
 
 # --- CSV Parsing Functions ---
 
@@ -297,6 +301,75 @@ def list_accessible_google_ads_customers(client: GoogleAdsClient) -> List[Dict[s
 
 
 # --- End of Google Ads Service Functions ---
+
+# --- Mailchimp Service Functions ---
+
+def get_mailchimp_client():
+    """Initializes and returns a Mailchimp Marketing API client."""
+    api_key = current_app.config.get('MAILCHIMP_API_KEY')
+    server = current_app.config.get('MAILCHIMP_SERVER_PREFIX')
+
+    if not api_key or 'YOUR_MAILCHIMP_API_KEY' in api_key:
+        current_app.logger.warning("Mailchimp API key not configured.")
+        return None
+
+    try:
+        client = MailchimpMarketing.Client()
+        client.set_config({
+            "api_key": api_key,
+            "server": server
+        })
+        return client
+    except Exception as e:
+        current_app.logger.error(f"Failed to initialize Mailchimp client: {e}")
+        return None
+
+def get_mailchimp_campaigns_mock() -> List[MailchimpData]:
+    """Returns mock Mailchimp campaign data."""
+    current_date = datetime.now().date()
+    return [
+        MailchimpData(
+            campaign_id="mc_001",
+            campaign_title="Fall 2023 Newsletter",
+            subject_line="Check out our autumn deals!",
+            report_date=current_date,
+            emails_sent=5000,
+            open_rate=25.5,
+            click_rate=4.2,
+            conversions=120
+        ),
+        MailchimpData(
+            campaign_id="mc_002",
+            campaign_title="AI Nexus Product Update",
+            subject_line="New Features are here: Business Chimp is live!",
+            report_date=current_date,
+            emails_sent=12000,
+            open_rate=38.2,
+            click_rate=8.7,
+            conversions=450
+        )
+    ]
+
+def generate_business_chimp_content(topic: str, context: str = "") -> str:
+    """
+    Generates marketing content using the 'Business Chimp' persona.
+    The persona is a savvy, data-driven, yet slightly playful marketing monkey.
+    """
+    prompt = f"""
+    You are the 'Business Chimp', an expert AI marketing strategist.
+    Your personality is: Savvy, data-driven, highly efficient, but also playful and energetic (think expert marketer meets a high-performance chimp).
+    You use monkey-related metaphors occasionally but keep it professional and results-oriented.
+
+    Task: Generate a high-impact marketing email or social media post about the following topic.
+    Topic: {topic}
+    Additional Context: {context}
+
+    Focus on: Conversion, engagement, and clear value proposition.
+    Structure: Include a catchy subject line (or headline) and a compelling body.
+    """
+    return generate_content_with_gemini(prompt)
+
+# --- End of Mailchimp Service Functions ---
 
 # --- Gemini AI Service Functions ---
 

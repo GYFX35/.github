@@ -15,7 +15,8 @@ from .services import (
     initialize_fb_api, get_fan_ad_placements_mock, get_fan_performance_data_mock,
     get_google_ads_client, list_accessible_google_ads_customers, # Added Google Ads services
     get_mock_cloud_service_data, get_ai_cloud_recommendations, # Added Cloud Optimization services
-    generate_content_with_gemini
+    generate_content_with_gemini,
+    get_mailchimp_campaigns_mock, generate_business_chimp_content # Business Chimp services
 )
 # Note: GoogleAdsException is handled in services.py, not directly in routes typically
 
@@ -30,6 +31,30 @@ def index():
 def affiliate_marketing():
     """Serves the affiliate marketing placeholder page."""
     return render_template('affiliate_marketing.html', affiliate_data=current_app.affiliate_data_store)
+
+@main_bp.route('/business-chimp', methods=['GET', 'POST'])
+def business_chimp():
+    """Serves the Business Chimp (Mailchimp + Content Gen) page."""
+    if not current_app.mailchimp_data_store:
+        current_app.mailchimp_data_store = get_mailchimp_campaigns_mock()
+
+    generated_content = None
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'generate_copy':
+            topic = request.form.get('topic')
+            context = request.form.get('context', '')
+            if topic:
+                generated_content = generate_business_chimp_content(topic, context)
+                flash('Business Chimp has swung into action and generated your copy!', 'success')
+            else:
+                flash('Please provide a topic for the Business Chimp.', 'warning')
+
+    return render_template(
+        'mailchimp_marketing.html',
+        mailchimp_data=current_app.mailchimp_data_store,
+        generated_content=generated_content
+    )
 
 @main_bp.route('/cloud-optimization')
 def cloud_optimization():

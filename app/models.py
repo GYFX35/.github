@@ -94,6 +94,18 @@ class CloudServiceData:
     usage_value: float
     ai_optimization_score: float = 0.0 # Score from 0-100 indicating AI-driven efficiency
 
+@dataclass
+class MailchimpData:
+    """Represents performance data for a Mailchimp email campaign."""
+    campaign_id: str
+    campaign_title: str
+    subject_line: str
+    report_date: date
+    emails_sent: int
+    open_rate: float  # percentage
+    click_rate: float # percentage
+    conversions: Optional[int] = 0
+
 # For Phase 1, we'll manage lists of these objects globally or within app context.
 # Example:
 # affiliate_data_store: List[AffiliatePerformanceData] = []

@@ -17,6 +17,8 @@ def create_app(test_config=None):
         GOOGLE_ADS_DEVELOPER_TOKEN='YOUR_DEVELOPER_TOKEN',
         GOOGLE_ADS_REDIRECT_URI='http://localhost:5000/google_ads_oauth_callback',
         GOOGLE_API_KEY='YOUR_GOOGLE_API_KEY',
+        MAILCHIMP_API_KEY='YOUR_MAILCHIMP_API_KEY',
+        MAILCHIMP_SERVER_PREFIX='YOUR_MAILCHIMP_SERVER_PREFIX',
     )
 
     if test_config is None:
@@ -30,6 +32,7 @@ def create_app(test_config=None):
     app.affiliate_data_store = []
     app.ad_campaign_data_store = []
     app.cloud_service_data_store = []
+    app.mailchimp_data_store = []
 
     # Register blueprints
     from .routes import main_bp
