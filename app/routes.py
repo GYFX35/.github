@@ -256,8 +256,9 @@ def generate_script_proxy():
         return {"error": "Missing prompt in request body"}, 400
 
     prompt = data['prompt']
+    image_data = data.get('image') # Optional base64 image
     try:
-        content = generate_content_with_gemini(prompt)
+        content = generate_content_with_gemini(prompt, image_data)
         return {"response": content}, 200
     except Exception as e:
         current_app.logger.error(f"Error in generate_script_proxy: {e}")
