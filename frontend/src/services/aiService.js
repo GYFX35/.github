@@ -2,7 +2,7 @@
 
 // AI Service for generating video scripts via Backend Proxy (Gemini 3.5 Flash)
 
-const BACKEND_AI_PROXY_URL = '/api/generate-script';
+const BACKEND_AI_PROXY_URL = import.meta.env.VITE_API_URL || '/api/generate-script';
 
 // Function to generate a script using an AI model via backend proxy
 export async function generateScript(topic, image = null) {
