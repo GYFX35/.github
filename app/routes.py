@@ -1,5 +1,5 @@
 import io
-from flask import Blueprint, render_template, session, current_app, flash, redirect, url_for, request
+from flask import Blueprint, render_template, session, current_app, flash, redirect, url_for, request, jsonify
 
 # Facebook SDK imports
 from facebook_business.api import FacebookAdsApi
@@ -16,7 +16,9 @@ from .services import (
     get_google_ads_client, list_accessible_google_ads_customers, # Added Google Ads services
     get_mock_cloud_service_data, get_ai_cloud_recommendations, # Added Cloud Optimization services
     generate_content_with_gemini,
-    get_mailchimp_campaigns_mock, generate_business_chimp_content # Business Chimp services
+    get_mailchimp_campaigns_mock, generate_business_chimp_content, # Business Chimp services
+    generate_website_service, generate_game_service, generate_app_service, generate_backend_service,
+    debug_code_service, generate_social_media_post_service, optimize_ads_service, analyze_website_service
 )
 # Note: GoogleAdsException is handled in services.py, not directly in routes typically
 
@@ -288,6 +290,61 @@ def generate_script_proxy():
     except Exception as e:
         current_app.logger.error(f"Error in generate_script_proxy: {e}")
         return {"error": str(e)}, 500
+
+@main_bp.route('/ai-services')
+def ai_services_dashboard():
+    """Serves the AI Services dashboard."""
+    return render_template('ai_services.html')
+
+@main_bp.route('/ai-services/software-engineer', methods=['POST'])
+def software_engineer_route():
+    data = request.get_json()
+    action = data.get('action')
+    prompt = data.get('prompt')
+    if not prompt: return {"error": "Prompt is required"}, 400
+
+    try:
+        if action == 'website': result = generate_website_service(prompt)
+        elif action == 'game': result = {"code": generate_game_service(prompt)}
+        elif action == 'app': result = {"code": generate_app_service(prompt)}
+        elif action == 'backend': result = {"code": generate_backend_service(prompt)}
+        else: return {"error": "Invalid action"}, 400
+        return jsonify(result), 200
+    except Exception as e: return {"error": str(e)}, 500
+
+@main_bp.route('/ai-services/debugger', methods=['POST'])
+def debugger_route():
+    data = request.get_json()
+    code = data.get('code')
+    language = data.get('language', 'python')
+    if not code: return {"error": "Code is required"}, 400
+    try:
+        result = debug_code_service(code, language)
+        return jsonify({"analysis": result}), 200
+    except Exception as e: return {"error": str(e)}, 500
+
+@main_bp.route('/ai-services/marketer', methods=['POST'])
+def marketer_route():
+    data = request.get_json()
+    action = data.get('action')
+    prompt = data.get('prompt')
+    if not prompt: return {"error": "Prompt is required"}, 400
+    try:
+        if action == 'post': result = {"content": generate_social_media_post_service(prompt)}
+        elif action == 'ads': result = optimize_ads_service(prompt)
+        else: return {"error": "Invalid action"}, 400
+        return jsonify(result), 200
+    except Exception as e: return {"error": str(e)}, 500
+
+@main_bp.route('/ai-services/system-analyzer', methods=['POST'])
+async def system_analyzer_route():
+    data = request.get_json()
+    url = data.get('url')
+    if not url: return {"error": "URL is required"}, 400
+    try:
+        result = await analyze_website_service(url)
+        return jsonify(result), 200
+    except Exception as e: return {"error": str(e)}, 500
 
 @main_bp.route('/sw.js')
 def service_worker(): return current_app.send_static_file('sw.js'), 200, {'Content-Type': 'application/javascript'}
