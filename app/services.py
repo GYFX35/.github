@@ -5,6 +5,9 @@ from typing import List, Dict, Any, Tuple, Optional
 from flask import current_app, session # Added session for Facebook token access
 import random # For mock data for Facebook
 import google.generativeai as genai
+import base64
+import io
+from PIL import Image
 
 # App-specific models
 from .models import AffiliatePerformanceData, AdCampaignPerformanceData, CloudServiceData
@@ -297,8 +300,8 @@ def list_accessible_google_ads_customers(client: GoogleAdsClient) -> List[Dict[s
 
 # --- Gemini AI Service Functions ---
 
-def generate_content_with_gemini(prompt: str) -> str:
-    """Generates content using Google's Gemini 3.5 Flash model."""
+def generate_content_with_gemini(prompt: str, image_data: str = None) -> str:
+    """Generates content using Google's Gemini 1.5 Flash model, supporting multimodal input."""
     api_key = current_app.config.get('GOOGLE_API_KEY')
     if not api_key or 'YOUR_GOOGLE_API_KEY' in api_key:
         current_app.logger.warning("Gemini API key not configured. Returning mock response.")
@@ -306,20 +309,24 @@ def generate_content_with_gemini(prompt: str) -> str:
 
     try:
         genai.configure(api_key=api_key)
-        # Using gemini-1.5-flash as gemini-3.5-flash might not be the exact identifier yet,
-        # but the prompt specifically asked for 3.5 flash.
-        # Based on search results, gemini-3.5-flash is being rolled out.
-        model = genai.GenerativeModel('gemini-1.5-flash') # Default to 1.5 if 3.5 is not yet in GA
+        # Using gemini-1.5-flash as default, it's very capable with images
+        model = genai.GenerativeModel('gemini-1.5-flash')
 
-        # Try to use 3.5 flash if it's likely available or requested
-        try:
-            model_35 = genai.GenerativeModel('gemini-3.5-flash')
-            response = model_35.generate_content(prompt)
-            return response.text
-        except Exception as e:
-            current_app.logger.info(f"Gemini 3.5 Flash not available, falling back to 1.5 Flash: {e}")
-            response = model.generate_content(prompt)
-            return response.text
+        content = [prompt]
+        if image_data:
+            try:
+                if "," in image_data:
+                    image_data = image_data.split(",")[1]
+                img_bytes = base64.b64decode(image_data)
+                img = Image.open(io.BytesIO(img_bytes))
+                content.append(img)
+                prompt += "\n\nAlso consider the provided image as context for the video script."
+                content[0] = prompt
+            except Exception as e:
+                current_app.logger.error(f"Error processing image data: {e}")
+
+        response = model.generate_content(content)
+        return response.text
 
     except Exception as e:
         current_app.logger.error(f"Error calling Gemini API: {e}")

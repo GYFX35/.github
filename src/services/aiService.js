@@ -5,7 +5,7 @@
 const BACKEND_AI_PROXY_URL = '/api/generate-script';
 
 // Function to generate a script using an AI model via backend proxy
-export async function generateScript(topic) {
+export async function generateScript(topic, image = null) {
   const prompt = `
     You are an expert educational content creator.
     Generate a script for an engaging short educational video (around 2-3 minutes) on the topic: "${topic}".
@@ -28,6 +28,7 @@ export async function generateScript(topic) {
       },
       body: JSON.stringify({
         prompt: prompt,
+        image: image, // base64 data
       }),
     });
 

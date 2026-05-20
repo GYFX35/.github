@@ -3,12 +3,22 @@ import TopicInput from './components/TopicInput';
 import React, { useState } from 'react';
 import { generateScript } from './services/aiService'; // Import the service
 import ScriptDisplay from './components/ScriptDisplay'; // Import the ScriptDisplay component
+import CameraCapture from './components/CameraCapture';
 
 function App() {
   const [topic, setTopic] = useState('');
+  const [capturedImage, setCapturedImage] = useState(null);
   const [scriptContent, setScriptContent] = useState(''); // This will now hold HTML from Quill
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const handleCapture = (imageData) => {
+    setCapturedImage(imageData);
+  };
+
+  const handleClearCapture = () => {
+    setCapturedImage(null);
+  };
 
   const handleScriptEditorChange = (content, delta, source, editor) => {
     // content is the new HTML content of the editor
@@ -23,7 +33,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      const script = await generateScript(submittedTopic);
+      const script = await generateScript(submittedTopic, capturedImage);
       setScriptContent(script);
     } catch (err) {
       setError(err.message || 'Failed to generate script.');
@@ -38,6 +48,8 @@ function App() {
       <div className="container">
         <h1>AI Video Content Generator</h1>
         <TopicInput onSubmitTopic={handleTopicSubmit} />
+
+        <CameraCapture onCapture={handleCapture} onClear={handleClearCapture} />
 
         {isLoading && <p className="loading-message">Generating script, please wait...</p>}
 
