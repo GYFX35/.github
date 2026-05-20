@@ -6,8 +6,9 @@
     <section class="hero">
         <h1>Welcome to AI Nexus</h1>
         <p>The all-in-one platform for optimizing your affiliate marketing campaigns and generating high-impact educational video content with the power of Artificial Intelligence.</p>
-        <div style="display: flex; gap: 1rem; justify-content: center;">
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <a href="{{ url_for('main.ads_optimization') }}" class="cta-button">Ads Optimization</a>
+            <a href="{{ url_for('main.ai_services_dashboard') }}" class="cta-button" style="background-color: #6366f1;">AI Developer Tools</a>
             <a href="{{ url_for('main.business_chimp') }}" class="cta-button" style="background-color: #f59e0b;">Meet the Business Chimp</a>
         </div>
     </section>
@@ -36,9 +37,14 @@
                 <a href="{{ url_for('main.cloud_optimization') }}" class="button-like" style="margin-top: 1rem;">Scale with Cloud AI</a>
             </div>
             <div class="feature-card">
+                <h3>Advanced AI Services</h3>
+                <p>Access our elite suite of AI tools: Software Engineer for code generation, a powerful Debugger, AI Marketer for campaigns, and a comprehensive System Analyzer.</p>
+                <a href="{{ url_for('main.ai_services_dashboard') }}" class="button-like" style="margin-top: 1rem;">Launch AI Dashboard</a>
+            </div>
+            <div class="feature-card">
                 <h3>AI Video Content Generator</h3>
                 <p>Create engaging educational video scripts in seconds. Our AI understands your topic and generates structured, ready-to-produce scripts with visual descriptions and narration.</p>
-                <p style="margin-top: 1rem; font-style: italic; color: var(--text-light);">(Integrated tool - coming soon to dashboard)</p>
+                <p style="margin-top: 1rem; font-style: italic; color: var(--text-light);">(Integrated tool - check AI Dashboard)</p>
             </div>
         </div>
     </section>

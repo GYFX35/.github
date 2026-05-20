@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}AI Nexus - Advanced AI Services{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Advanced AI Services</h1>
+    <p>Unlock the power of our 4 specialized AI tools: Software Engineer, Debugger, Marketer, and System Analyzer.</p>
+</section>
+
+<section class="ai-services-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; padding: 2rem;">
+    <!-- Software Engineer -->
+    <div class="feature-card" id="software-engineer">
+        <h3>Software Engineer</h3>
+        <p>Generate websites, games, apps, or backends from simple descriptions.</p>
+        <select id="se-action" class="styled-input" style="width: 100%; margin-bottom: 1rem;">
+            <option value="website">Website (HTML/CSS)</option>
+            <option value="game">Game (HTML/CSS/JS)</option>
+            <option value="app">Web App (HTML/CSS/JS)</option>
+            <option value="backend">Backend (Python/Flask)</option>
+        </select>
+        <textarea id="se-prompt" class="styled-textarea" placeholder="Describe what you want to build..." rows="4"></textarea>
+        <button onclick="runSoftwareEngineer()" class="cta-button" style="width: 100%; margin-top: 1rem;">Generate Code</button>
+        <div id="se-result" style="margin-top: 1rem; display: none;">
+            <pre id="se-code" style="background: #f4f4f4; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; max-height: 400px; font-size: 0.8rem;"></pre>
+        </div>
+    </div>
+
+    <!-- Debugger -->
+    <div class="feature-card" id="debugger">
+        <h3>Code Debugger</h3>
+        <p>Find bugs and security issues in your code instantly.</p>
+        <select id="debug-lang" class="styled-input" style="width: 100%; margin-bottom: 1rem;">
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="html">HTML</option>
+            <option value="css">CSS</option>
+        </select>
+        <textarea id="debug-code" class="styled-textarea" placeholder="Paste your code here..." rows="4"></textarea>
+        <button onclick="runDebugger()" class="cta-button" style="width: 100%; margin-top: 1rem; background-color: #ef4444;">Analyze Code</button>
+        <div id="debug-result" style="margin-top: 1rem; display: none;">
+            <div id="debug-analysis" style="background: #fef2f2; color: #991b1b; padding: 1rem; border-radius: 0.5rem; white-space: pre-wrap; font-size: 0.9rem;"></div>
+        </div>
+    </div>
+
+    <!-- Marketer -->
+    <div class="feature-card" id="marketer">
+        <h3>AI Marketer</h3>
+        <p>Create viral posts and optimize your ad campaigns.</p>
+        <select id="m-action" class="styled-input" style="width: 100%; margin-bottom: 1rem;">
+            <option value="post">Social Media Post</option>
+            <option value="ads">Ads Optimization</option>
+        </select>
+        <textarea id="m-prompt" class="styled-textarea" placeholder="What are we promoting?" rows="4"></textarea>
+        <button onclick="runMarketer()" class="cta-button" style="width: 100%; margin-top: 1rem; background-color: #10b981;">Generate Marketing</button>
+        <div id="m-result" style="margin-top: 1rem; display: none;">
+            <div id="m-content" style="background: #ecfdf5; color: #065f46; padding: 1rem; border-radius: 0.5rem; white-space: pre-wrap; font-size: 0.9rem;"></div>
+        </div>
+    </div>
+
+    <!-- System Analyzer -->
+    <div class="feature-card" id="system-analyzer">
+        <h3>System Analyzer</h3>
+        <p>Analyze any website for broken links and performance.</p>
+        <input type="url" id="sa-url" class="styled-input" style="width: 100%; margin-bottom: 1rem;" placeholder="https://example.com">
+        <button onclick="runSystemAnalyzer()" class="cta-button" style="width: 100%; margin-top: 1rem; background-color: #6366f1;">Start Analysis</button>
+        <div id="sa-result" style="margin-top: 1rem; display: none;">
+            <div id="sa-summary" style="background: #eef2ff; color: #3730a3; padding: 1rem; border-radius: 0.5rem; font-size: 0.9rem;"></div>
+        </div>
+    </div>
+</section>
+
+<script>
+async function runSoftwareEngineer() {
+    const action = document.getElementById('se-action').value;
+    const prompt = document.getElementById('se-prompt').value;
+    const resultDiv = document.getElementById('se-result');
+    const codePre = document.getElementById('se-code');
+
+    if (!prompt) return alert('Please enter a prompt');
+
+    codePre.textContent = 'Generating...';
+    resultDiv.style.display = 'block';
+
+    try {
+        const resp = await fetch('/ai-services/software-engineer', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({action, prompt})
+        });
+        const data = await resp.json();
+        if (data.error) throw new Error(data.error);
+
+        if (action === 'website') {
+            codePre.textContent = `--- HTML ---\n${data.html}\n\n--- CSS ---\n${data.css}`;
+        } else {
+            codePre.textContent = data.code;
+        }
+    } catch (e) {
+        codePre.textContent = 'Error: ' + e.message;
+    }
+}
+
+async function runDebugger() {
+    const language = document.getElementById('debug-lang').value;
+    const code = document.getElementById('debug-code').value;
+    const resultDiv = document.getElementById('debug-result');
+    const analysisDiv = document.getElementById('debug-analysis');
+
+    if (!code) return alert('Please paste some code');
+
+    analysisDiv.textContent = 'Analyzing...';
+    resultDiv.style.display = 'block';
+
+    try {
+        const resp = await fetch('/ai-services/debugger', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({language, code})
+        });
+        const data = await resp.json();
+        if (data.error) throw new Error(data.error);
+        analysisDiv.textContent = data.analysis;
+    } catch (e) {
+        analysisDiv.textContent = 'Error: ' + e.message;
+    }
+}
+
+async function runMarketer() {
+    const action = document.getElementById('m-action').value;
+    const prompt = document.getElementById('m-prompt').value;
+    const resultDiv = document.getElementById('m-result');
+    const contentDiv = document.getElementById('m-content');
+
+    if (!prompt) return alert('Please enter a description');
+
+    contentDiv.textContent = 'Generating...';
+    resultDiv.style.display = 'block';
+
+    try {
+        const resp = await fetch('/ai-services/marketer', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({action, prompt})
+        });
+        const data = await resp.json();
+        if (data.error) throw new Error(data.error);
+        contentDiv.textContent = data.content || data.recommendations;
+    } catch (e) {
+        contentDiv.textContent = 'Error: ' + e.message;
+    }
+}
+
+async function runSystemAnalyzer() {
+    const url = document.getElementById('sa-url').value;
+    const resultDiv = document.getElementById('sa-result');
+    const summaryDiv = document.getElementById('sa-summary');
+
+    if (!url) return alert('Please enter a URL');
+
+    summaryDiv.textContent = 'Analyzing website... This may take a few seconds.';
+    resultDiv.style.display = 'block';
+
+    try {
+        const resp = await fetch('/ai-services/system-analyzer', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({url})
+        });
+        const data = await resp.json();
+        if (data.error) throw new Error(data.error);
+
+        summaryDiv.innerHTML = '';
+        const title = document.createElement('strong');
+        title.textContent = `Results for ${url}:`;
+        summaryDiv.appendChild(title);
+        summaryDiv.appendChild(document.createElement('br'));
+
+        const stats = document.createElement('div');
+        stats.textContent = `✅ OK: ${data.ok.length} | ❌ Broken: ${data.broken.length} | ⚠️ Slow: ${data.slow.length}`;
+        summaryDiv.appendChild(stats);
+        summaryDiv.appendChild(document.createElement('br'));
+
+        if (data.broken.length > 0) {
+            const brokenTitle = document.createElement('strong');
+            brokenTitle.textContent = 'Broken Links:';
+            summaryDiv.appendChild(brokenTitle);
+            const ul = document.createElement('ul');
+            data.broken.forEach(l => {
+                const li = document.createElement('li');
+                li.textContent = `${l.url} (${l.status})`;
+                ul.appendChild(li);
+            });
+            summaryDiv.appendChild(ul);
+        }
+    } catch (e) {
+        summaryDiv.textContent = 'Error: ' + e.message;
+    }
+}
+</script>
+
+<style>
+.styled-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-family: inherit;
+    resize: vertical;
+}
+.styled-input {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-family: inherit;
+}
+</style>
+{% endblock %}

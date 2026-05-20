@@ -7,6 +7,12 @@ import random # For mock data for Facebook
 import google.generativeai as genai
 import base64
 import io
+import httpx
+import asyncio
+import time
+import re
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse
 from PIL import Image
 
 # App-specific models
@@ -376,7 +382,7 @@ def generate_business_chimp_content(topic: str, context: str = "") -> str:
 def generate_content_with_gemini(prompt: str, image_data: str = None) -> str:
     """Generates content using Google's Gemini 1.5 Flash model, supporting multimodal input."""
     api_key = current_app.config.get('GOOGLE_API_KEY')
-    if not api_key or 'YOUR_GOOGLE_API_KEY' in api_key:
+    if not api_key or 'YOUR_GOOGLE_API_KEY' in api_key or api_key == 'MOCK_KEY':
         current_app.logger.warning("Gemini API key not configured. Returning mock response.")
         return f"Mock Gemini response for: {prompt[:50]}..."
 
@@ -511,3 +517,139 @@ def get_ai_cloud_recommendations(service_data: List[CloudServiceData], use_gemin
     return recommendations
 
 # --- End of Cloud Optimization Service Functions ---
+
+# --- Ported AI Services (from gyfx35/AI-services) ---
+
+def generate_website_service(prompt: str) -> Dict[str, str]:
+    """Generates HTML and CSS for a website based on a prompt."""
+    ai_prompt = f"""
+    You are a skilled web developer. Generate the HTML and CSS for a single-page website based on this prompt: {prompt}
+
+    Format your response EXACTLY like this:
+    [HTML]
+    ... (html code) ...
+    [/HTML]
+    [CSS]
+    ... (css code) ...
+    [/CSS]
+    """
+    response_text = generate_content_with_gemini(ai_prompt)
+
+    if "Mock Gemini response" in response_text:
+        return {
+            "html": f"<!-- {response_text} -->",
+            "css": f"/* {response_text} */"
+        }
+
+    html_match = re.search(r'\[HTML\](.*?)\[/HTML\]', response_text, re.DOTALL | re.IGNORECASE)
+    css_match = re.search(r'\[CSS\](.*?)\[/CSS\]', response_text, re.DOTALL | re.IGNORECASE)
+
+    html_code = ""
+    if html_match:
+        html_code = html_match.group(1).strip()
+    else:
+        # Fallback for markdown code blocks if tags are missing
+        html_block = re.search(r'```html\n(.*?)```', response_text, re.DOTALL | re.IGNORECASE)
+        if html_block:
+            html_code = html_block.group(1).strip()
+
+    css_code = ""
+    if css_match:
+        css_code = css_match.group(1).strip()
+    else:
+        # Fallback for markdown code blocks if tags are missing
+        css_block = re.search(r'```css\n(.*?)```', response_text, re.DOTALL | re.IGNORECASE)
+        if css_block:
+            css_code = css_block.group(1).strip()
+
+    return {
+        "html": html_code if html_code else "<!-- Error: HTML not found -->",
+        "css": css_code if css_code else "/* Error: CSS not found */"
+    }
+
+def generate_game_service(prompt: str) -> str:
+    """Generates a simple game (HTML/CSS/JS) based on a prompt."""
+    ai_prompt = f"Act as a game developer. Generate a complete, single-file HTML (including CSS and JS) for a simple browser game based on this prompt: {prompt}. Ensure it's playable immediately."
+    return generate_content_with_gemini(ai_prompt)
+
+def generate_app_service(prompt: str) -> str:
+    """Generates a simple web app based on a prompt."""
+    ai_prompt = f"Act as a software engineer. Generate the full code (HTML/CSS/JS) for a functional single-page web application based on this prompt: {prompt}."
+    return generate_content_with_gemini(ai_prompt)
+
+def generate_backend_service(prompt: str) -> str:
+    """Generates backend code based on a prompt."""
+    ai_prompt = f"Act as a backend developer. Generate Python Flask code for a backend service based on this prompt: {prompt}. Include routes and basic logic."
+    return generate_content_with_gemini(ai_prompt)
+
+def debug_code_service(code: str, language: str) -> str:
+    """Analyzes code and provides debugging insights."""
+    ai_prompt = f"Act as an expert debugger. Analyze the following {language} code and identify potential bugs, security issues, or performance bottlenecks. Provide clear explanations and suggested fixes.\n\nCode:\n{code}"
+    return generate_content_with_gemini(ai_prompt)
+
+def generate_social_media_post_service(description: str) -> str:
+    """Generates a social media post based on a description."""
+    ai_prompt = f"Act as a creative marketer. Write an engaging social media post based on this description: {description}. Include hashtags and emojis."
+    return generate_content_with_gemini(ai_prompt)
+
+def optimize_ads_service(prompt: str) -> Dict[str, Any]:
+    """Provides ad optimization recommendations."""
+    ai_prompt = f"""
+    Act as an Ads Expert. Analyze this ad campaign idea: {prompt}
+    Provide:
+    1. Optimized Ad Copy
+    2. Recommended Keywords
+    3. Targeting Suggestions
+    Format as a structured response.
+    """
+    response_text = generate_content_with_gemini(ai_prompt)
+    return {"recommendations": response_text}
+
+async def _check_link(client: httpx.AsyncClient, link_data: Dict[str, str], results: Dict[str, List[Dict[str, Any]]]):
+    url = link_data['url']
+    try:
+        start_time = time.time()
+        response = await client.head(url, follow_redirects=True, timeout=5)
+        end_time = time.time()
+
+        res = {
+            'url': url,
+            'text': link_data['text'],
+            'status': response.status_code,
+            'time_ms': round((end_time - start_time) * 1000)
+        }
+
+        if response.status_code >= 400:
+            results['broken'].append(res)
+        elif res['time_ms'] > 1000:
+            results['slow'].append(res)
+        else:
+            results['ok'].append(res)
+    except Exception as e:
+        results['broken'].append({'url': url, 'text': link_data['text'], 'status': 'Error', 'error': str(e)})
+
+async def analyze_website_service(url: str) -> Dict[str, Any]:
+    """Analyzes a website for broken links and performance."""
+    try:
+        headers = {'User-Agent': 'AI-Nexus-Analyzer/1.0'}
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        links = []
+        for a in soup.find_all('a', href=True):
+            full_url = urljoin(url, a['href'])
+            if urlparse(full_url).scheme in ('http', 'https'):
+                links.append({'url': full_url, 'text': a.get_text(strip=True)})
+
+        results = {'ok': [], 'broken': [], 'slow': []}
+        async with httpx.AsyncClient() as client:
+            tasks = [_check_link(client, link, results) for link in links[:20]] # Limit to 20 links for speed
+            await asyncio.gather(*tasks)
+
+        return results
+    except Exception as e:
+        return {'error': str(e)}
+
+# --- End of Ported AI Services ---

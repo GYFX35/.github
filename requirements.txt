@@ -1,6 +1,9 @@
 Flask>=2.0.0
-facebook_business>=18.0.0 # Using a recent version, can be adjusted
-google-ads>=23.0.0 # Using a recent version, can be adjusted
+facebook_business>=18.0.0
+google-ads>=23.0.0
 google-generativeai>=0.8.0
 Pillow
 mailchimp-marketing
+httpx
+beautifulsoup4
+lxml
