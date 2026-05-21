@@ -27,7 +27,8 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def index():
     """Serves the home page."""
-    return render_template('index.html')
+    # When deployed, the React frontend is served from the static folder
+    return current_app.send_static_file('index.html')
 
 @main_bp.route('/affiliate-marketing')
 def affiliate_marketing():

@@ -1,35 +1,35 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
+# Stage 1: Build the React frontend
+FROM node:18-slim AS frontend-builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
 
-# Set the working directory in the container
+# Stage 2: Build the Flask backend
+FROM python:3.11-slim
 WORKDIR /app
 
-# Copy the requirements file into the container at /app
+# Install system dependencies if needed (e.g., for some python packages)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+# Install gunicorn
+RUN pip install --no-cache-dir gunicorn
 
-# Install any needed packages specified in requirements.txt
-# --no-cache-dir reduces image size by not storing the pip cache
-# --trusted-host pypi.python.org can help in some network environments
-RUN pip install --no-cache-dir --trusted-host pypi.python.org -r requirements.txt
-
-# Copy the current directory contents into the container at /app
-# This includes app.py and boxing_game_logic.py
 COPY . .
+# Copy built frontend from Stage 1
+COPY --from=frontend-builder /app/dist /app/dist
 
-# Make port 8080 available to the world outside this container
-# Cloud Run and other services will often expect to use a port specified by the PORT env var.
-# Gunicorn will bind to this $PORT.
+# Ensure the Flask app can find the dist folder if we decide to serve it
+# but for now, we follow the existing structure.
+
 ENV PORT 8080
 EXPOSE 8080
 
-# Define environment variable for Flask app (optional, but good practice)
-ENV FLASK_APP=app.py
-# ENV FLASK_ENV=production # You might set this, though Gunicorn handles much of the prod setup
-
-# Run app.py when the container launches using Gunicorn
-# Binds to 0.0.0.0 to be accessible from outside the container on the mapped port ($PORT)
-# Number of workers and threads can be adjusted based on expected load and server resources.
-# --timeout 0 can be useful for services like Cloud Run that manage timeouts externally.
-# For Cloud Run, it's recommended to have only 1 worker due to how it instances.
-CMD exec gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 app:app
-```
+# Use gunicorn to serve the Flask app
+# We use the factory function create_app from the app package
+CMD exec gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 "app:create_app()"
