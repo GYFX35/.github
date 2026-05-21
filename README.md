@@ -69,6 +69,41 @@ This project is an AI-powered agent designed to help companies optimize their af
     ```
     The application will be accessible at `http://127.0.0.1:5000/`.
 
+## Deployment to Google Cloud
+
+This project is configured for deployment to **Google Cloud Run** using **Cloud Build**.
+
+### Prerequisites
+1.  **Google Cloud Project:** Create a project in the [Google Cloud Console](https://console.cloud.google.com/).
+2.  **gcloud CLI:** Install and initialize the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install).
+3.  **Enable APIs:** Enable the Cloud Build and Cloud Run APIs in your project:
+    ```bash
+    gcloud services enable cloudbuild.googleapis.com run.googleapis.com
+    ```
+
+### Deploying using Cloud Build
+To build the container and deploy it to Cloud Run in one step, run:
+```bash
+gcloud builds submit --config cloudbuild.yaml
+```
+
+This will:
+1.  Upload the source code (excluding files in `.gcloudignore`).
+2.  Build the multi-stage Docker image (building the React frontend and setting up the Flask backend).
+3.  Push the image to Google Container Registry.
+4.  Deploy the image to Cloud Run as a service named `ai-nexus-platform`.
+
+### Manual Deployment
+Alternatively, you can deploy manually:
+1.  **Build and push the image:**
+    ```bash
+    gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/ai-nexus-platform .
+    ```
+2.  **Deploy to Cloud Run:**
+    ```bash
+    gcloud run deploy ai-nexus-platform --image gcr.io/YOUR_PROJECT_ID/ai-nexus-platform --platform managed --region us-central1 --allow-unauthenticated
+    ```
+
 **Setting up Facebook Audience Network Integration:**
 1.  **Create a Facebook Developer App:**
     *   Go to [https://developers.facebook.com/apps/](https://developers.facebook.com/apps/).

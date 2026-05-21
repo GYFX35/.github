@@ -10,6 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate', // Automatically update PWA when new content is available
       injectRegister: 'auto', // or 'script' or 'inline' or null
       workbox: {
+        maximumFileSizeToCacheInBytes: 3000000,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'], // Cache these file types
         runtimeCaching: [ // Example: Cache API calls (if any) - adjust as needed
           {

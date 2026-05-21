@@ -3,7 +3,11 @@ import os
 
 def create_app(test_config=None):
     """Create and configure the Flask app."""
-    app = Flask(__name__, instance_relative_config=True)
+    # We serve the static files from the 'dist' directory built by Vite
+    app = Flask(__name__,
+                instance_relative_config=True,
+                static_folder='../dist',
+                static_url_path='/')
 
     # Configure the app
     app.config.from_mapping(
