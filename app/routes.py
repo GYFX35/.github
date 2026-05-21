@@ -18,7 +18,8 @@ from .services import (
     generate_content_with_gemini,
     get_mailchimp_campaigns_mock, generate_business_chimp_content, # Business Chimp services
     generate_website_service, generate_game_service, generate_app_service, generate_backend_service,
-    debug_code_service, generate_social_media_post_service, optimize_ads_service, analyze_website_service
+    debug_code_service, generate_social_media_post_service, optimize_ads_service, analyze_website_service,
+    run_gumloop_flow, trigger_n8n_webhook, run_lamatic_flow
 )
 # Note: GoogleAdsException is handled in services.py, not directly in routes typically
 
@@ -346,6 +347,30 @@ async def system_analyzer_route():
         result = await analyze_website_service(url)
         return jsonify(result), 200
     except Exception as e: return {"error": str(e)}, 500
+
+@main_bp.route('/ai-services/automation', methods=['POST'])
+async def automation_route():
+    data = request.get_json()
+    tool = data.get('tool')
+    payload = data.get('payload', {})
+
+    try:
+        if tool == 'gumloop':
+            flow_id = data.get('flow_id')
+            if not flow_id: return {"error": "flow_id is required for Gumloop"}, 400
+            result = run_gumloop_flow(flow_id, payload)
+        elif tool == 'n8n':
+            result = await trigger_n8n_webhook(payload)
+        elif tool == 'lamatic':
+            flow_id = data.get('flow_id')
+            if not flow_id: return {"error": "flow_id is required for Lamatic"}, 400
+            result = await run_lamatic_flow(flow_id, payload)
+        else:
+            return {"error": "Invalid tool specified"}, 400
+
+        return jsonify(result), 200
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 @main_bp.route('/sw.js')
 def service_worker(): return current_app.send_static_file('sw.js'), 200, {'Content-Type': 'application/javascript'}
