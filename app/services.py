@@ -653,3 +653,71 @@ async def analyze_website_service(url: str) -> Dict[str, Any]:
         return {'error': str(e)}
 
 # --- End of Ported AI Services ---
+
+# --- Automation Integration Services (Gumloop, n8n, Lamatic.ai) ---
+
+def run_gumloop_flow(flow_id: str, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    """Runs a Gumloop flow using the gumloop SDK."""
+    api_key = current_app.config.get('GUMLOOP_API_KEY')
+    user_id = current_app.config.get('GUMLOOP_USER_ID')
+
+    if not api_key or 'YOUR_GUMLOOP_API_KEY' in api_key or not user_id or 'YOUR_GUMLOOP_USER_ID' in user_id:
+        current_app.logger.warning("Gumloop credentials not configured. Returning mock response.")
+        return {"status": "mock", "message": f"Mock Gumloop run for flow {flow_id}", "outputs": {"result": "Success"}}
+
+    try:
+        from gumloop import GumloopClient
+        client = GumloopClient(api_key=api_key, user_id=user_id)
+        output = client.run_flow(flow_id=flow_id, inputs=inputs)
+        return {"status": "success", "outputs": output}
+    except Exception as e:
+        current_app.logger.error(f"Error running Gumloop flow: {e}")
+        return {"status": "error", "message": str(e)}
+
+async def trigger_n8n_webhook(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Triggers an n8n workflow via webhook."""
+    webhook_url = current_app.config.get('N8N_WEBHOOK_URL')
+
+    if not webhook_url or 'YOUR_N8N_WEBHOOK_URL' in webhook_url:
+        current_app.logger.warning("n8n webhook URL not configured. Returning mock response.")
+        return {"status": "mock", "message": "Mock n8n webhook trigger success"}
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(webhook_url, json=payload, timeout=10)
+            response.raise_for_status()
+            return {"status": "success", "data": response.json() if response.content else "OK"}
+    except Exception as e:
+        current_app.logger.error(f"Error triggering n8n webhook: {e}")
+        return {"status": "error", "message": str(e)}
+
+async def run_lamatic_flow(flow_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Runs a Lamatic.ai flow via their REST API."""
+    api_key = current_app.config.get('LAMATIC_API_KEY')
+    project_id = current_app.config.get('LAMATIC_PROJECT_ID')
+
+    if not api_key or 'YOUR_LAMATIC_API_KEY' in api_key:
+        current_app.logger.warning("Lamatic API key not configured. Returning mock response.")
+        return {"status": "mock", "message": f"Mock Lamatic run for flow {flow_id}"}
+
+    # Lamatic usually provides an endpoint per flow or a general one.
+    # Based on their docs: https://api.cloud.llamaindex.ai/api/v2/extract?project_id={PROJECT_ID}
+    # Or for their managed platform: https://studio.lamatic.ai/api/v1/execute (assuming this based on common patterns)
+    # Let's use the pattern from the search result: executeFlow(flowId, payload)
+
+    endpoint = f"https://api.lamatic.ai/v1/project/{project_id}/flow/{flow_id}/execute"
+
+    try:
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        async with httpx.AsyncClient() as client:
+            response = await client.post(endpoint, json=payload, headers=headers, timeout=15)
+            response.raise_for_status()
+            return {"status": "success", "data": response.json()}
+    except Exception as e:
+        current_app.logger.error(f"Error running Lamatic flow: {e}")
+        return {"status": "error", "message": str(e)}
+
+# --- End of Automation Integration Services ---

@@ -68,6 +68,23 @@
             <div id="sa-summary" style="background: #eef2ff; color: #3730a3; padding: 1rem; border-radius: 0.5rem; font-size: 0.9rem;"></div>
         </div>
     </div>
+
+    <!-- AI Automation (Gumloop, n8n, Lamatic) -->
+    <div class="feature-card" id="ai-automation">
+        <h3>AI Automation</h3>
+        <p>Connect with Gumloop, n8n, and Lamatic.ai for advanced workflows.</p>
+        <select id="auto-tool" class="styled-input" style="width: 100%; margin-bottom: 1rem;" onchange="toggleAutoFields()">
+            <option value="gumloop">Gumloop</option>
+            <option value="n8n">n8n (Webhook)</option>
+            <option value="lamatic">Lamatic.ai</option>
+        </select>
+        <input type="text" id="auto-flow-id" class="styled-input" style="width: 100%; margin-bottom: 1rem;" placeholder="Flow ID / Workflow ID">
+        <textarea id="auto-payload" class="styled-textarea" placeholder='Payload JSON (e.g. {"key": "value"})' rows="4"></textarea>
+        <button onclick="runAutomation()" class="cta-button" style="width: 100%; margin-top: 1rem; background-color: #f59e0b;">Run Automation</button>
+        <div id="auto-result" style="margin-top: 1rem; display: none;">
+            <pre id="auto-output" style="background: #fffbeb; color: #92400e; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.8rem;"></pre>
+        </div>
+    </div>
 </section>
 
 <script>
@@ -195,6 +212,48 @@ async function runSystemAnalyzer() {
         }
     } catch (e) {
         summaryDiv.textContent = 'Error: ' + e.message;
+    }
+}
+
+function toggleAutoFields() {
+    const tool = document.getElementById('auto-tool').value;
+    const flowIdInput = document.getElementById('auto-flow-id');
+    if (tool === 'n8n') {
+        flowIdInput.style.display = 'none';
+    } else {
+        flowIdInput.style.display = 'block';
+    }
+}
+
+async function runAutomation() {
+    const tool = document.getElementById('auto-tool').value;
+    const flow_id = document.getElementById('auto-flow-id').value;
+    const payloadStr = document.getElementById('auto-payload').value;
+    const resultDiv = document.getElementById('auto-result');
+    const outputPre = document.getElementById('auto-output');
+
+    let payload = {};
+    if (payloadStr) {
+        try {
+            payload = JSON.parse(payloadStr);
+        } catch (e) {
+            return alert('Invalid JSON payload');
+        }
+    }
+
+    outputPre.textContent = 'Running automation...';
+    resultDiv.style.display = 'block';
+
+    try {
+        const resp = await fetch('/ai-services/automation', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({tool, flow_id, payload})
+        });
+        const data = await resp.json();
+        outputPre.textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+        outputPre.textContent = 'Error: ' + e.message;
     }
 }
 </script>
