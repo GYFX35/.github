@@ -1,211 +1,81 @@
-# AI Marketer Agent
+# AI Marketer Agent (AI Nexus Platform)
 
-This project is an AI-powered agent designed to help companies optimize their affiliate marketing and advertising campaigns for improved visibility and performance.
+The AI Marketer Agent, evolving into the **AI Nexus Platform**, is an AI-powered ecosystem designed to help companies and developers optimize their digital presence. From affiliate marketing and ad campaign optimization to automated software engineering and system analysis, AI Nexus leverages state-of-the-art LLMs and automation tools to drive performance.
 
-## Features (Planned)
+## Project Vision: TAM, SAM, SOM
 
-*   **Affiliate Marketing Optimization:**
-    *   Identifying top-performing affiliates.
-    *   Suggesting new affiliate partners based on criteria.
-    *   Tracking conversion rates per affiliate.
-    *   Optimizing commission structures.
-*   **Ads Optimization:**
-    *   A/B testing ad creatives.
-    *   Keyword analysis and suggestion for PPC campaigns.
-    *   Bid management for ad platforms.
-    *   Audience segmentation and targeting recommendations.
+### TAM (Total Addressable Market) - ~$100B+
+The global market for AI in marketing, advertising, and software development automation. As businesses transition to AI-first strategies, the total potential for integrated optimization and automation tools spans across all digital-native enterprises.
 
-## Tech Stack
+### SAM (Serviceable Addressable Market) - ~$10B
+Small and Medium-sized Businesses (SMBs), digital marketing agencies, and independent software developers. These entities require high-performance AI tools but often lack the resources to build custom internal solutions.
 
-*   Backend: Python (Flask)
-*   Frontend: HTML5, CSS (basic styling)
+### SOM (Serviceable Obtainable Market) - ~$500M
+Independent affiliate marketers, niche e-commerce brands, and agile dev teams looking for an all-in-one platform that combines data-driven marketing insights (Google Ads, Facebook FAN) with AI-assisted development (automated code generation, debugging, and system analysis).
 
-## Current Features
+---
 
-### Phase 1: Core Data Aggregation & Basic Reporting
-*   **CSV Data Upload:**
-    *   Upload affiliate performance data via CSV.
-    *   Upload ad campaign performance data via CSV.
-*   **Basic Dashboards:**
-    *   View summary statistics for uploaded affiliate data (total clicks, conversions, commission, EPC).
-    *   View top-performing affiliates.
-    *   View all uploaded affiliate data in a table.
-    *   View summary statistics for uploaded ad campaign data (total impressions, clicks, cost, conversions, CTR, CPC, CPA).
-    *   View top-performing ad campaigns.
-    *   View all uploaded ad campaign data in a table.
+## Tech Stack & Tools
 
-### PWA Phase 1: Basic Installability & Offline Static Assets
-*   **Installable:** The application can be installed on compatible devices (desktops and mobiles).
-*   **Offline Access:** Core application pages and static assets are cached, allowing for basic offline browsing. An offline fallback page is provided if a non-cached page is accessed while offline.
-*   **Web App Manifest:** Includes `manifest.json` for PWA metadata.
-*   **Service Worker:** Uses `sw.js` for caching and offline capabilities.
+*   **Backend:** Python (Flask [async])
+*   **Frontend:** React, Vite, Tailwind CSS (PWA enabled)
+*   **AI Models:** Google Gemini 1.5 Flash (Multimodal: Text + Vision)
+*   **Integrations & Automation:**
+    *   **Gumloop:** For complex AI workflow orchestration.
+    *   **n8n:** For workflow automation and webhook-driven triggers.
+    *   **Lamatic.ai:** For managed AI flow execution.
+    *   **Marketing APIs:** Facebook Business SDK (Audience Network), Google Ads API, Mailchimp Marketing API.
+*   **Analysis Tools:** BeautifulSoup4 (Web Scraping), httpx (Async HTTP), Pillow (Image processing).
 
-### Facebook Audience Network (FAN) Integration - Phase 1
-*   **OAuth 2.0 Connection:** Users can connect their Facebook account to authorize the application to access FAN data.
-*   **Mock Data Display:** The Ads Optimization dashboard can display a list of (mock) FAN ad placements and their (mock) performance data (revenue, impressions, eCPM, fill rate) after connecting.
-*   **Secure Token Handling:** Access tokens are stored in the user's session (note: for production, more robust database storage is recommended).
-*   **Note:** This phase uses MOCK data for display. Actual API calls to fetch live FAN data will be implemented in a subsequent phase.
+---
 
-### Google Ads API Integration - Phase 1
-*   **OAuth 2.0 Connection:** Users can connect their Google account to authorize the application to access Google Ads data.
-*   **Accessible Customer Listing:** After connecting, the Ads Optimization dashboard can display a list of Google Ads customer accounts (Customer ID, Descriptive Name, Manager Status, Test Account Status) accessible to the authenticated user.
-*   **Secure Token Handling:** Refresh tokens are stored in the user's session (note: for production, more robust database storage is recommended). Access tokens are managed by the client library using the refresh token.
+## Current Project Status
+
+### Phase 1: Core Data & Dashboards (Completed)
+*   **CSV Data Upload:** Process affiliate and ad campaign performance data via CSV.
+*   **Basic Dashboards:** Summary statistics (EPC, CTR, CPC, CPA) and top-performer tracking for affiliates and ads.
+
+### Phase 2: AI Services & Automation (Active)
+*   **AI Services Dashboard:**
+    *   **Software Engineer:** Automated generation of Websites, Games, Apps, and Backend services.
+    *   **Debugger:** Expert-level code analysis and bug fixing.
+    *   **Marketer:** AI-generated social media posts and ad copy optimization.
+    *   **System Analyzer:** Async website crawling for broken links and performance bottlenecks.
+*   **Business Chimp:** Integration with Mailchimp for automated campaign analysis and "Business Chimp" persona-driven content generation.
+*   **Cloud Optimization:** AI-driven cost and performance recommendations for AWS, GCP, and SaaS providers.
+*   **Automation Hub:** Integration with Gumloop, n8n, and Lamatic.ai for running complex automation flows.
+
+### Phase 3: PWA & Multimodal Interaction (Completed)
+*   **Installable Web App:** Full PWA support with manifest and service worker caching for offline access.
+*   **Multimodal Gemini Proxy:** Backend proxy for Gemini 1.5 Flash allowing users to submit text and images for AI analysis.
+
+---
 
 ## Setup and Running
 
-1.  **Clone the repository (if applicable).**
-2.  **Create and activate a virtual environment (recommended):**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
-    ```
-3.  **Install dependencies:**
+1.  **Clone the repository.**
+2.  **Install dependencies:**
     ```bash
     pip install -r requirements.txt
+    npm install
     ```
-4.  **Run the application:**
-    ```bash
-    python run.py
-    ```
-    The application will be accessible at `http://127.0.0.1:5000/`.
+3.  **Run the application:**
+    *   **Backend:** `python run.py` (Starts Flask on port 5000)
+    *   **Frontend:** `npm start` (Starts Vite on port 3000)
+    The application will be accessible at `http://localhost:3000`.
 
-## Deployment to Google Cloud
+## Deployment
 
-This project is configured for deployment to **Google Cloud Run** using **Cloud Build**.
+This project is configured for **Google Cloud Run** using **Cloud Build**.
 
-### Prerequisites
-1.  **Google Cloud Project:** Create a project in the [Google Cloud Console](https://console.cloud.google.com/).
-2.  **gcloud CLI:** Install and initialize the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install).
-3.  **Enable APIs:** Enable the Cloud Build and Cloud Run APIs in your project:
-    ```bash
-    gcloud services enable cloudbuild.googleapis.com run.googleapis.com
-    ```
-
-### Deploying using Cloud Build
-To build the container and deploy it to Cloud Run in one step, run:
 ```bash
 gcloud builds submit --config cloudbuild.yaml
 ```
 
-This will:
-1.  Upload the source code (excluding files in `.gcloudignore`).
-2.  Build the multi-stage Docker image (building the React frontend and setting up the Flask backend).
-3.  Push the image to Google Container Registry.
-4.  Deploy the image to Cloud Run as a service named `ai-nexus-platform`.
+This automates the multi-stage Docker build, compiling the React frontend and serving it via the Flask backend in a single container.
 
-### Manual Deployment
-Alternatively, you can deploy manually:
-1.  **Build and push the image:**
-    ```bash
-    gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/ai-nexus-platform .
-    ```
-2.  **Deploy to Cloud Run:**
-    ```bash
-    gcloud run deploy ai-nexus-platform --image gcr.io/YOUR_PROJECT_ID/ai-nexus-platform --platform managed --region us-central1 --allow-unauthenticated
-    ```
-
-**Setting up Facebook Audience Network Integration:**
-1.  **Create a Facebook Developer App:**
-    *   Go to [https://developers.facebook.com/apps/](https://developers.facebook.com/apps/).
-    *   Create a new app or use an existing one.
-    *   Add the "Audience Network" product to your app.
-2.  **Configure OAuth Redirect URI:**
-    *   In your Facebook App settings, under "Facebook Login" -> "Settings" (or similar section for OAuth client settings), add a "Valid OAuth Redirect URI".
-    *   For local development, this should be `http://localhost:5000/fb_oauth_callback` (matching `FACEBOOK_REDIRECT_URI` in the app's config).
-3.  **Set Environment Variables/Configuration:**
-    *   The application expects `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`, and `FACEBOOK_REDIRECT_URI` to be configured.
-    *   Currently, these are placeholders in `app/__init__.py`. For local development, you can replace these placeholders directly.
-    *   **IMPORTANT FOR PRODUCTION:** Use environment variables or a secure configuration management system for these credentials. Do not commit actual secrets to your repository.
-    *   Example for placeholders in `app/__init__.py`:
-        ```python
-        app.config.from_mapping(
-            # ... other configs ...
-            FACEBOOK_APP_ID='YOUR_ACTUAL_FACEBOOK_APP_ID',
-            FACEBOOK_APP_SECRET='YOUR_ACTUAL_FACEBOOK_APP_SECRET',
-            FACEBOOK_REDIRECT_URI='http://localhost:5000/fb_oauth_callback', # Or your deployed URI
-        )
-        ```
-4.  **Required Scopes:** The application requests `read_audience_network_insights` and `ads_read` scopes. Ensure your app has appropriate permissions if more are needed later.
-
-**Setting up Google Ads Integration:**
-1.  **Create a Google Cloud Project:**
-    *   Go to the [Google Cloud Console](https://console.cloud.google.com/).
-    *   Create a new project or select an existing one.
-2.  **Enable Google Ads API:**
-    *   In your GCP project, navigate to "APIs & Services" -> "Library".
-    *   Search for "Google Ads API" and enable it.
-3.  **Configure OAuth Consent Screen:**
-    *   Navigate to "APIs & Services" -> "OAuth consent screen".
-    *   Configure it as required (User Type, App name, support email, authorized domains).
-4.  **Create OAuth 2.0 Credentials:**
-    *   Navigate to "APIs & Services" -> "Credentials".
-    *   Click "Create Credentials" -> "OAuth client ID".
-    *   Select "Web application" as the application type.
-    *   Add an "Authorized redirect URI": For local development, use `http://localhost:5000/google_ads_oauth_callback` (matching `GOOGLE_ADS_REDIRECT_URI` in the app's config).
-    *   Note the generated Client ID and Client Secret.
-5.  **Obtain a Developer Token:**
-    *   Apply for a developer token for the Google Ads API through the Google Ads UI (typically from an MCC/manager account). This token needs at least Basic Access, or Standard Access for production use.
-6.  **Set Environment Variables/Configuration:**
-    *   The application expects `GOOGLE_ADS_CLIENT_ID`, `GOOGLE_ADS_CLIENT_SECRET`, `GOOGLE_ADS_DEVELOPER_TOKEN`, and `GOOGLE_ADS_REDIRECT_URI` to be configured.
-    *   These are currently placeholders in `app/__init__.py`. Replace them with your actual credentials for local development.
-    *   **IMPORTANT FOR PRODUCTION:** Use environment variables or a secure configuration system.
-    *   Example in `app/__init__.py`:
-        ```python
-        app.config.from_mapping(
-            # ... other configs ...
-            GOOGLE_ADS_CLIENT_ID='YOUR_ACTUAL_GOOGLE_CLIENT_ID',
-            GOOGLE_ADS_CLIENT_SECRET='YOUR_ACTUAL_GOOGLE_CLIENT_SECRET',
-            GOOGLE_ADS_DEVELOPER_TOKEN='YOUR_ACTUAL_DEVELOPER_TOKEN',
-            GOOGLE_ADS_REDIRECT_URI='http://localhost:5000/google_ads_oauth_callback',
-        )
-        ```
-7.  **Login Customer ID (Optional but Recommended):**
-    *   If you are accessing accounts through a Manager Account (MCC), you might need to set `GOOGLE_ADS_LOGIN_CUSTOMER_ID` in the config to your MCC ID (without hyphens). The `google-ads` library uses this for some calls if provided. The current implementation lists all accessible accounts without necessarily needing this globally set first, but it's good practice for focused operations.
-
-**Note on PWA Testing:**
-*   For PWA features (like installation and service worker caching) to work correctly, it's often best to serve the application over HTTPS, even in development if possible (e.g., using a self-signed certificate or a tool like `mkcert`). However, `http://localhost` is typically treated as a secure context by browsers for PWA development.
-*   Use browser developer tools (Application tab -> Manifest, Service Workers, Cache Storage) to inspect PWA components.
-*   Lighthouse audits can help identify PWA compliance issues.
+---
 
 ## CSV File Formats
 
-For the CSV upload functionality, please ensure your files adhere to the following formats. The first row must be a header row with the exact column names as specified.
-
-### Affiliate Performance CSV Format
-
-*   **Required Columns:**
-    *   `report_date`: Date of the report (YYYY-MM-DD).
-    *   `affiliate_name`: Name of the affiliate (Text).
-*   **Optional Columns:**
-    *   `impressions`: Number of impressions (Integer).
-    *   `clicks`: Number of clicks (Integer).
-    *   `conversions`: Number of conversions (Integer).
-    *   `commission_amount`: Total commission amount (Float, e.g., 123.45).
-
-**Example `affiliate_data.csv`:**
-```csv
-report_date,affiliate_name,impressions,clicks,conversions,commission_amount
-2023-10-01,Affiliate A,1000,100,10,50.00
-2023-10-01,Affiliate B,2000,150,12,65.50
-2023-10-02,Affiliate A,,,5,25.00
-```
-
-### Ad Campaign Performance CSV Format
-
-*   **Required Columns:**
-    *   `report_date`: Date of the report (YYYY-MM-DD).
-    *   `campaign_name`: Name of the ad campaign (Text).
-*   **Optional Columns:**
-    *   `platform`: Advertising platform, e.g., "Google Ads", "Facebook Ads" (Text).
-    *   `impressions`: Number of impressions (Integer).
-    *   `clicks`: Number of clicks (Integer).
-    *   `cost`: Total cost of the campaign for that period (Float, e.g., 200.75).
-    *   `conversions`: Number of conversions (Integer).
-
-**Example `ad_campaign_data.csv`:**
-```csv
-report_date,campaign_name,platform,impressions,clicks,cost,conversions
-2023-10-01,Fall Sale Campaign,Google Ads,10000,500,250.00,50
-2023-10-01,Brand Awareness Q4,Facebook Ads,50000,1000,300.50,10
-2023-10-02,Fall Sale Campaign,Google Ads,12000,600,280.00,65
-```
+Refer to the original documentation for `Affiliate Performance` and `Ad Campaign Performance` CSV structures. Ensure headers match exactly for successful processing.
